@@ -1,0 +1,134 @@
+[
+  {
+    "question": "1 日本（ ）ラーメンは おいしいです。",
+    "options": [
+      "に",
+      "の",
+      "を",
+      "へ"
+    ],
+    "correctIndex": 1,
+    "explanation": "The word 'の' is used to indicate possession or association, making the phrase mean 'Japanese ramen is delicious.'"
+  },
+  {
+    "question": "2 わたしには きょうだいが 二人 います。弟（ ）妹です。",
+    "options": [
+      "は",
+      "も",
+      "と",
+      "か"
+    ],
+    "correctIndex": 2,
+    "explanation": "The word 'と' is used to connect two nouns, meaning 'and,' so it lists both 'brother and sister.'"
+  },
+  {
+    "question": "3 山下「田中さん（ ）きのう どこかに 出かけましたか。」\n田中「いいえ、いえに いました。」",
+    "options": [
+      "で",
+      "は",
+      "を",
+      "に"
+    ],
+    "correctIndex": 1,
+    "explanation": "'は' is used as a topic marker, emphasizing the subject 'Tanaka-san.'"
+  },
+  {
+    "question": "4 （タクシーで）\nA「つぎの かどを 右（ ）まがって ください。」\nB「わかりました。」",
+    "options": [
+      "が",
+      "や",
+      "か",
+      "に"
+    ],
+    "correctIndex": 3,
+    "explanation": "'に' indicates direction, meaning 'turn right at the next corner.'"
+  },
+  {
+    "question": "5 きのう、わたしは ひとり（ ）えいがを 見に 行きました。",
+    "options": [
+      "が",
+      "を",
+      "で",
+      "は"
+    ],
+    "correctIndex": 2,
+    "explanation": "'で' indicates the means or context in which the action takes place, meaning 'by myself.'"
+  },
+  {
+    "question": "山下「今日 パーティーが ありますから、田中さん（ ）来てください。」",
+    "options": [
+      "に",
+      "も",
+      "や",
+      "で"
+    ],
+    "correctIndex": 0,
+    "explanation": "「に」 is used to indicate a direction or a recipient."
+  },
+  {
+    "question": "田中「この ぼうしは 山田さん（ ）ですか。」",
+    "options": [
+      "や",
+      "は",
+      "の",
+      "か"
+    ],
+    "correctIndex": 3,
+    "explanation": "「か」 is used at the end of a question."
+  },
+  {
+    "question": "駅まで タクシーで 1000円（ ）です。",
+    "options": [
+      "ぐらい",
+      "など",
+      "ごろ",
+      "も"
+    ],
+    "correctIndex": 0,
+    "explanation": "「ぐらい」 is used to indicate an approximate amount."
+  },
+  {
+    "question": "A「さようなら。」 B「さようなら。また（ ）。」",
+    "options": [
+      "おととい",
+      "今日",
+      "来週",
+      "今月"
+    ],
+    "correctIndex": 2,
+    "explanation": "「来週」 means 'next week,' indicating a future meeting."
+  },
+  {
+    "question": "わたしの 母は 50さいです。父は 55さいです。母は 父（ ） 5さい わかいです。",
+    "options": [
+      "から",
+      "まで",
+      "より",
+      "のほうが"
+    ],
+    "correctIndex": 2,
+    "explanation": "「より」 is used for comparisons."
+  },
+  {
+    "question": "子ども「いただきます。」 母「あ、食べる（ ）手を あらいましょう。」",
+    "options": [
+      "まえに",
+      "のまえに",
+      "あとに",
+      "のあとに"
+    ],
+    "correctIndex": 0,
+    "explanation": "「まえに」 means 'before,' used to describe an action happening before another."
+  },
+  {
+    "question": "A「東京でも 雪が ふりますか。」 B「ええ、ふりますよ。でも、きょねんは あまり（ ）。」",
+    "options": [
+      "ふりませんでした",
+      "ふりません",
+      "ふりました",
+      "ふります"
+    ],
+    "correctIndex": 0,
+    "explanation": "「ふりませんでした」 means 'didn't snow,' used for past tense."
+  }
+]

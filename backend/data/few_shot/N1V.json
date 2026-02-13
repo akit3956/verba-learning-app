@@ -1,0 +1,145 @@
+[
+  {
+    "question": "去年より利潤がわずかに増えた。",
+    "options": [
+      "りし",
+      "りえき",
+      "りじゅん",
+      "りそく"
+    ],
+    "correctIndex": 2,
+    "explanation": "利潤 (りじゅん) means profit."
+  },
+  {
+    "question": "橋本選手の活躍で、なんとかピンチを逃れた。",
+    "options": [
+      "のがれた",
+      "それた",
+      "まぬかれた",
+      "はなれた"
+    ],
+    "correctIndex": 2,
+    "explanation": "逃れる (のがれる) means to escape."
+  },
+  {
+    "question": "子どものおもちゃは、安全性を __ 考慮して選ぶようにしている。",
+    "options": [
+      "こうりょ",
+      "こうこう",
+      "こうりょう",
+      "こうよう"
+    ],
+    "correctIndex": 0,
+    "explanation": "考慮 (こうりょ) means consideration."
+  },
+  {
+    "question": "この辺りは視界を __ ものが何もない。",
+    "options": [
+      "さまたげる",
+      "へだてる",
+      "せばめる",
+      "さえぎる"
+    ],
+    "correctIndex": 3,
+    "explanation": "遮る (さえぎる) means to obstruct."
+  },
+  {
+    "question": "この説は科学的な __ に乏しい。",
+    "options": [
+      "こんじょ",
+      "こんきょ",
+      "こんじょう",
+      "こんしょう"
+    ],
+    "correctIndex": 1,
+    "explanation": "根拠 (こんきょ) means basis."
+  },
+  {
+    "question": "何事も初めが __ だ。",
+    "options": [
+      "たんしん",
+      "たんじん",
+      "たんじょう",
+      "たんしん"
+    ],
+    "correctIndex": 1,
+    "explanation": "肝心 (かんじん) means crucial."
+  },
+  {
+    "question": "物置の隅で、ほこり（ ）になっている古い人形を見つけた。",
+    "options": [
+      "ぐるみ",
+      "がらみ",
+      "まみれ",
+      "ずくめ"
+    ],
+    "correctIndex": 2,
+    "explanation": "ほこりまみれ means 'covered in dust'."
+  },
+  {
+    "question": "木村さんとは共通の趣味があるので、いつも会話が（ ）。",
+    "options": [
+      "舞う",
+      "弾む",
+      "転がる",
+      "跳ねる"
+    ],
+    "correctIndex": 1,
+    "explanation": "会話が弾む means 'the conversation flows/sparks'."
+  },
+  {
+    "question": "地域の（ ）に合った医療のシステムが求められている。",
+    "options": [
+      "実情",
+      "実況",
+      "実績",
+      "実在"
+    ],
+    "correctIndex": 0,
+    "explanation": "地域の実情 means 'the actual situation/conditions of the area'."
+  },
+  {
+    "question": "その選手は、十年に一人の（ ）だと言われている。",
+    "options": [
+      "俊久",
+      "大久",
+      "巨匠",
+      "逸材"
+    ],
+    "correctIndex": 3,
+    "explanation": "逸材 means 'a rare talent'."
+  },
+  {
+    "question": "書類に（ ）があった場合、申請は受理されません。",
+    "options": [
+      "不穏",
+      "不当",
+      "不備",
+      "不順"
+    ],
+    "correctIndex": 2,
+    "explanation": "不備 means 'incomplete or not in proper form'."
+  },
+  {
+    "question": "約300年前の絵画の（ ）が終わり、来月から公開される予定だ。",
+    "options": [
+      "回復",
+      "修復",
+      "復旧",
+      "復興"
+    ],
+    "correctIndex": 1,
+    "explanation": "修復 means 'restoration' of art or objects."
+  },
+  {
+    "question": "経済だけでなく、法律にも詳しいのが彼の（ ）だ。",
+    "options": [
+      "深み",
+      "強み",
+      "高み",
+      "重み"
+    ],
+    "correctIndex": 1,
+    "explanation": "強み means 'strong point or expertise'."
+  }
+]

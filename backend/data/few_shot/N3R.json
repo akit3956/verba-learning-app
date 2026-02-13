@@ -1,0 +1,35 @@
+[
+  {
+    "question": "このメールを見て、参加しない人は、どうしなければならないか。",
+    "options": [
+      "返信の必要はないが、7月31日までに記念品代を払う。",
+      "返信の必要はないが、8月10日に記念品代を払う。",
+      "7月8日までに返信して、7月31日までに記念品代を払う。",
+      "7月8日までに返信して、8月10日に記念品代を払う。"
+    ],
+    "correctIndex": 2,
+    "explanation": "メールに参加不参加の返信を7月8日までに行い、参加しない場合は記念品代を7月中に支払う必要があるため、3が正解。"
+  },
+  {
+    "question": "うれしいこととあるが、どのようなことか。",
+    "options": [
+      "会社の難しい問題がやっと解決できたこと",
+      "ホテルの人が書類の整理をしてくれていたこと",
+      "ホテルが書類を捨てずに残しておいてくれたこと",
+      "同じ部屋にもう一晩泊まることができたこと"
+    ],
+    "correctIndex": 2,
+    "explanation": "The narrator was happy because the hotel did not throw away the important documents."
+  },
+  {
+    "question": "この文章を書いた人は、どんな人が芸術家だと考えているか。",
+    "options": [
+      "子どものころの経験を大人になっても思い出すことができる人",
+      "子どものころの経験を大人になっても音楽や絵で伝えられる人",
+      "大人になって「子どもの心」をほとんどなくしてしまった人",
+      "大人になっても「子どもの心」で感じたものを音楽や絵で表せる人"
+    ],
+    "correctIndex": 3,
+    "explanation": "The text suggests that a true artist is someone who can express what they felt in childhood through music and art even as an adult."
+  }
+]

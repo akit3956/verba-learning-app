@@ -1,0 +1,35 @@
+[
+  {
+    "question": "この会社の割引サービスについて正しいものはどれか。",
+    "options": [
+      "「ジミック」のプリンターを使っている人は、7、8月中だけインクを5％引きで買うことができる。",
+      "「ジミック」のプリンターを使っている人が、7、8月中にインクを注文すれば、5％引きより安く買うことができる。",
+      "「ジミック」のプリンターを7、8月中に買う人は、インクを5％引きより安く買うことができる。",
+      "「ジミック」のプリンターを7、8月中に買う人がインクを一緒に注文すれば、どちらも5％引きで買うことができる。"
+    ],
+    "correctIndex": 1,
+    "explanation": "7、8月中にインクを注文することで、通常の5％割引より安く購入できます。"
+  },
+  {
+    "question": "筆者は、恐怖や不安をどうとらえているか。",
+    "options": [
+      "恐怖や不安は、安全性の向上を妨げる。",
+      "恐怖や不安を感じることが、安全につながる。",
+      "恐怖や不安を取り除くことが、安全に役立つ。",
+      "恐怖や不安があるうちは、安全とは言えない。"
+    ],
+    "correctIndex": 1,
+    "explanation": "The passage suggests that fear and anxiety can lead to safer behavior, linking them to safety."
+  },
+  {
+    "question": "人に強い影響を与えるのは大部分からなる作品とは限りませんとあるが、なぜか。",
+    "options": [
+      "強い影響を与えるかどうかは、読者手の姿勢で決まるものであるから",
+      "どのような作品でも、読めば読むほど強い影響を受けるものであるから",
+      "人々にどのような影響を与えるかは、書物によってそれぞれ異なるから",
+      "書物だけでなく、世の中のできごとからもさまざまな影響を受けているから"
+    ],
+    "correctIndex": 0,
+    "explanation": "The passage discusses the impact of one's attitude while reading, implying that the influence a work has is not solely dependent on its size or content."
+  }
+]

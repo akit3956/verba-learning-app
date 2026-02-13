@@ -1,0 +1,112 @@
+[
+  {
+    "question": "先週 デパートに かいものに いきました。",
+    "options": [
+      "せんしゅ",
+      "せんしゅう",
+      "ぜんしゅ",
+      "ぜんしゅう"
+    ],
+    "correctIndex": 1,
+    "explanation": "先週 (せんしゅう) means 'last week'."
+  },
+  {
+    "question": "ごはんの 後で さんぽします。",
+    "options": [
+      "つぎ",
+      "うしろ",
+      "まえ",
+      "あと"
+    ],
+    "correctIndex": 3,
+    "explanation": "後で (あとで) means 'after'."
+  },
+  {
+    "question": "もう いちど 言って ください。",
+    "options": [
+      "いって",
+      "きって",
+      "まって",
+      "たって"
+    ],
+    "correctIndex": 0,
+    "explanation": "言って (いって) is the te-form of 言う (いう), meaning 'say'."
+  },
+  {
+    "question": "ちかくに 山が あります。",
+    "options": [
+      "かわ",
+      "やま",
+      "いけ",
+      "うみ"
+    ],
+    "correctIndex": 1,
+    "explanation": "山 (やま) means 'mountain'."
+  },
+  {
+    "question": "この ホテルは へやが 多いです。",
+    "options": [
+      "すくない",
+      "おおい",
+      "せまい",
+      "ひろい"
+    ],
+    "correctIndex": 1,
+    "explanation": "多い (おおい) means 'many'."
+  },
+  {
+    "question": "ともだちと いっしょに 学校に いきます。",
+    "options": [
+      "がこう",
+      "がこお",
+      "がっこう",
+      "がっこお"
+    ],
+    "correctIndex": 2,
+    "explanation": "学校 (がっこう) means 'school'."
+  },
+  {
+    "question": "えんぴつが 六本 あります。",
+    "options": [
+      "ろくほん",
+      "ろくぼん",
+      "ろっぽん",
+      "ろっほん"
+    ],
+    "correctIndex": 2,
+    "explanation": "The correct counter for long objects like pencils is 本, with 六本 pronounced 'ろっぽん'."
+  },
+  {
+    "question": "この 新聞は いくらですか。",
+    "options": [
+      "しんぶん",
+      "しんぼん",
+      "しむん",
+      "しぶん"
+    ],
+    "correctIndex": 0,
+    "explanation": "The word 'newspaper' is 新聞, pronounced 'しんぶん'."
+  },
+  {
+    "question": "この カメラは 安いです。",
+    "options": [
+      "たかい",
+      "やすい",
+      "おもい",
+      "かるい"
+    ],
+    "correctIndex": 1,
+    "explanation": "安い means 'cheap', which is the opposite of 'たかい' (expensive)."
+  },
+  {
+    "question": "かさは 外に あります。",
+    "options": [
+      "いえ",
+      "なか",
+      "そと",
+      "にわ"
+    ],
+    "correctIndex": 2,
+    "explanation": "外 means 'outside', which matches 'そと'."
+  }
+]

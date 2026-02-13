@@ -1,0 +1,90 @@
+[
+  {
+    "question": "A「ねえ、この前教えた計算機能、使ってみた？」\nB「うん、今まであんなに時間をかけてたのが（　）簡単に計算できたよ。」\nA「でしょ。パソコンのことならまかせてよ。」",
+    "options": [
+      "ばかばかしい思いをするものを",
+      "ばかばかしく思えるもので",
+      "ばかばかしい思いをするくらい",
+      "ばかばかしく思えるくらい"
+    ],
+    "correctIndex": 3,
+    "explanation": "The expression 'ばかばかしく思えるくらい' describes something that seems absurdly simple."
+  },
+  {
+    "question": "山中「あ、木村先生でいらっしゃいますか。AB出版の山中でございますが、今から原稿をいただきにあがってもよろしいでしょうか。」\n木村「すみません。まだできてないんです。あと３日（　）。」",
+    "options": [
+      "待っておいでになります",
+      "お待ち申し上げております",
+      "待たせていただくことにしましょうか",
+      "待っていただくわけにはいきませんか"
+    ],
+    "correctIndex": 3,
+    "explanation": "The phrase '待っていただくわけにはいきませんか' is used to politely ask someone to wait."
+  },
+  {
+    "question": "山田「実は、初めから宇宙飛行士になる（　）、そうじゃないんです。大学を出たら、医者になろうと思っていましたから。」\n記者「では、何がきっかけで、宇宙飛行士になりたいと思ったんですか。」",
+    "options": [
+      "つもりだったかというと",
+      "つもりなのかっていわれたら",
+      "つもりじゃなかったのかっていわれたら",
+      "つもりがなかったかっていうと"
+    ],
+    "correctIndex": 0,
+    "explanation": "The phrase 'つもりだったかというと' is used to correct someone's assumption or expectation."
+  },
+  {
+    "question": "大学入試では、試験当日初めてその大学に行き、迷ってしまった＿＿＿事前に見学しておくとよい。",
+    "options": [
+      "ない",
+      "という",
+      "ように",
+      "このの"
+    ],
+    "correctIndex": 2,
+    "explanation": "事前に見学して、迷わないようにするために。"
+  },
+  {
+    "question": "趣味を持つのは良いことだと思いますが、家庭を犠牲＿＿＿＿＿＿、それはちょっと問題です。",
+    "options": [
+      "となる",
+      "まで",
+      "と",
+      "にして"
+    ],
+    "correctIndex": 1,
+    "explanation": "家庭を犠牲にするまで、という意味で \"まで\" を使います。"
+  },
+  {
+    "question": "管理職になったら、たとえ＿＿＿＿＿＿部下の失敗も引き受けるというくらいの覚悟がなくてはならない。",
+    "options": [
+      "だとして",
+      "がなくても",
+      "自分には責任",
+      "自分の責任"
+    ],
+    "correctIndex": 3,
+    "explanation": "部下の失敗を自分の責任として引き受ける覚悟。"
+  },
+  {
+    "question": "小さな町工場だった。",
+    "options": [
+      "もともとは",
+      "我が社だが",
+      "今でこそ",
+      "一流企業と言われる"
+    ],
+    "correctIndex": 2,
+    "explanation": "The phrase '今でこそ' is used to highlight how things have changed over time from a small factory."
+  },
+  {
+    "question": "新番組でこれまでにない役柄を演じる俳優の上田秋さん。役作りに悩んでいる＿＿＿＿という。",
+    "options": [
+      "と",
+      "そうでもない",
+      "思いきや",
+      "のか"
+    ],
+    "correctIndex": 3,
+    "explanation": "The particle 'のか' is used to express a question or wonder about something."
+  }
+]

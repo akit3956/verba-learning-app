@@ -1,0 +1,112 @@
+[
+  {
+    "question": "毎日（　）どちらでもいいことばかりを日記に書いているのだが、それがストレス解消になっている。",
+    "options": [
+      "書くとも書かないとも",
+      "書いたか書かなかったか",
+      "書いても書かなくても",
+      "書くとか書かないとか"
+    ],
+    "correctIndex": 3,
+    "explanation": "The phrase '書くとか書かないとか' implies uncertainty or vagueness, fitting the context best."
+  },
+  {
+    "question": "顔を洗うときには、せっけんを（　）、さっと洗うのが肌によい。",
+    "options": [
+      "使いすぎずに",
+      "使うにすぎず",
+      "使いすぎなく",
+      "使いすぎもなくて"
+    ],
+    "correctIndex": 0,
+    "explanation": "‘使いすぎずに’ means 'without using too much,' which is appropriate for skincare advice."
+  },
+  {
+    "question": "留学するまで、私は自分が見ている世界がすべてだと思っていた。実はそれが世界のほんの小さな一部分（　）気付いていなかった。",
+    "options": [
+      "でないことにしか",
+      "でしかないことに",
+      "にないことにしか",
+      "にしかないことで"
+    ],
+    "correctIndex": 1,
+    "explanation": "‘でしかないことに’ means 'only a part of,' highlighting the limited scope of one's perception."
+  },
+  {
+    "question": "（会社で）A「あれ？あそこにいるの、山田さんかな。」B「山田さんは出張中だよ。今ここに（ ）。」",
+    "options": [
+      "いるわけじゃない",
+      "いるわけないじゃない",
+      "いたわけじゃないよ",
+      "いなかったわけじゃない"
+    ],
+    "correctIndex": 1,
+    "explanation": "'いるわけないじゃない' strongly denies the possibility, suitable for emphasizing that Yamada isn't present."
+  },
+  {
+    "question": "A「このタレント、最近よくテレビで見るよね。」B「ほんと。この人を見ない日はない（　）よね。」",
+    "options": [
+      "と言ってもいいぐらいだ",
+      "と言ったらいいだけだ",
+      "と言ってもいいからだ",
+      "と言ったらいいことだ"
+    ],
+    "correctIndex": 0,
+    "explanation": "‘と言ってもいいぐらいだ’ expresses something to such an extent that you could say so."
+  },
+  {
+    "question": "不調だった山中選手がついにゴールを決めた。彼に＿＿＿　＿＿＿　相当あったはずだ。",
+    "options": [
+      "したら",
+      "という",
+      "プレッシャーは",
+      "「もし、またミスをしたら」"
+    ],
+    "correctIndex": 3,
+    "explanation": "This sentence deals with the pressure faced by the athlete, suggesting that \"もし、またミスをしたら\" fits the context of pressure in performance."
+  },
+  {
+    "question": "「これは地元ではよく知られた料理で、このすっぱさがおいしい。ただ＿＿＿　＿＿＿増えていることだね。」と田中さんは語る。",
+    "options": [
+      "なんていう",
+      "残念なのは",
+      "若者が最近",
+      "すっぱいのが苦手だ"
+    ],
+    "correctIndex": 2,
+    "explanation": "The sentence discusses the popularity of the dish, and the correct continuation involves a demographic change, hinting that '若者が最近' fits this theme."
+  },
+  {
+    "question": "忘れられないプレゼントは、小学生のときに両親が買ってくれた自転車です。苦しい生活の中、＿＿＿涙が出ます。",
+    "options": [
+      "それだけで",
+      "どんな思いで",
+      "買ってくれたのかと",
+      "思うと"
+    ],
+    "correctIndex": 3,
+    "explanation": "思うと is often used to express emotional realization or deep feeling."
+  },
+  {
+    "question": "最近、子どもがピアノを習いたいと言いだした。わたしは、子どもが＿＿＿と思っている。",
+    "options": [
+      "したい",
+      "やりたい",
+      "やらせて",
+      "と思うことは"
+    ],
+    "correctIndex": 2,
+    "explanation": "やらせて is a causative form suggesting allowing or making someone do something."
+  },
+  {
+    "question": "国民の、政治＿＿＿＿＿＿政治家は指導力を発揮できるのだ。",
+    "options": [
+      "初めて",
+      "に対する",
+      "があって",
+      "信頼"
+    ],
+    "correctIndex": 3,
+    "explanation": "信頼 is used to express trust or confidence in someone's abilities."
+  }
+]

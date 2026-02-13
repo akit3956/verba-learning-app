@@ -1,0 +1,156 @@
+[
+  {
+    "question": "日本の首都はどこですか。",
+    "options": [
+      "しゅうと",
+      "しゅうとう",
+      "しゅと",
+      "しゅうとつ"
+    ],
+    "correctIndex": 2,
+    "explanation": "「首都」は「しゅと」と読み、日本の首都は東京です。"
+  },
+  {
+    "question": "地球は太陽のまわりを回っている。",
+    "options": [
+      "じきゅう",
+      "ちきゅう",
+      "じぎゅう",
+      "ちぎゅう"
+    ],
+    "correctIndex": 1,
+    "explanation": "「地球」は「ちきゅう」と読みます。"
+  },
+  {
+    "question": "あの時計は遅れている。",
+    "options": [
+      "こわれて",
+      "おくれて",
+      "たおれて",
+      "よごれて"
+    ],
+    "correctIndex": 1,
+    "explanation": "「遅れて」は「おくれて」と読むため、時計が時間よりも遅れている状態を指しています。"
+  },
+  {
+    "question": "二人で協力すれば、仕事も早く終わるだろう。",
+    "options": [
+      "きょうりょく",
+      "どりょく",
+      "きょうりょく",
+      "どうりょく"
+    ],
+    "correctIndex": 0,
+    "explanation": "「協力」は「きょうりょく」と読み、共同で力を貸すことを指します。"
+  },
+  {
+    "question": "大学の奨学金に応募した。",
+    "options": [
+      "おうほ",
+      "おうもう",
+      "おうほう",
+      "おうもう"
+    ],
+    "correctIndex": 2,
+    "explanation": "「応募」は「おうぼ」と読みます。奨学金などに申請することを指します。"
+  },
+  {
+    "question": "子どもの疑問に答えた。",
+    "options": [
+      "くもん",
+      "きもん",
+      "ぐもん",
+      "ぎもん"
+    ],
+    "correctIndex": 3,
+    "explanation": "「疑問」は「ぎもん」と読み、質問や問いのことを指します。"
+  },
+  {
+    "question": "試験の成績が発表された。",
+    "options": [
+      "はつぴょう",
+      "はつびょう",
+      "はっぴょ",
+      "はっぴょう"
+    ],
+    "correctIndex": 3,
+    "explanation": "「発表」は「はっぴょう」と読み、何かを公式に知らせることを指します。"
+  },
+  {
+    "question": "単語のリストはとなりのページにあります。",
+    "options": [
+      "けいご",
+      "けいご",
+      "だんご",
+      "たんご"
+    ],
+    "correctIndex": 3,
+    "explanation": "「単語」は「たんご」と読みます。"
+  },
+  {
+    "question": "みんなで話し合って、問題をかいけつした。",
+    "options": [
+      "改次",
+      "改結",
+      "解決",
+      "解結"
+    ],
+    "correctIndex": 2,
+    "explanation": "問題を解決する: to solve a problem. '解決' (かいけつ) is the correct kanji for solving an issue."
+  },
+  {
+    "question": "山田さんに東京をあんないしてもらった。",
+    "options": [
+      "安内",
+      "家内",
+      "室内",
+      "案内"
+    ],
+    "correctIndex": 3,
+    "explanation": "案内する: to guide. '案内' (あんない) is used when guiding or showing around."
+  },
+  {
+    "question": "わたしはけんこうのために毎日走っています。",
+    "options": [
+      "健康",
+      "建康",
+      "健庫",
+      "建庫"
+    ],
+    "correctIndex": 0,
+    "explanation": "健康: health. '健康' (けんこう) is the correct kanji for health."
+  },
+  {
+    "question": "今年の夏はきおんが高かった。",
+    "options": [
+      "気温",
+      "気湿",
+      "気湯",
+      "気混"
+    ],
+    "correctIndex": 0,
+    "explanation": "気温: temperature. '気温' (きおん) is the standard way to express air temperature."
+  },
+  {
+    "question": "頭がいたいので、薬を飲んだ。",
+    "options": [
+      "病い",
+      "痛い",
+      "狭い",
+      "痩い"
+    ],
+    "correctIndex": 1,
+    "explanation": "痛い: painful. '痛い' (いたい) is the correct expression for when something hurts."
+  },
+  {
+    "question": "このシャツは工場でたりょうに作られている。",
+    "options": [
+      "多量",
+      "多料",
+      "大量",
+      "大料"
+    ],
+    "correctIndex": 2,
+    "explanation": "大量: large quantity. '大量' (たいりょう) means mass production or large quantity."
+  }
+]

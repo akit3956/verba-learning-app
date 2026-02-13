@@ -1,0 +1,112 @@
+[
+  {
+    "question": "ずっと好調だったのに、最後の試合で敗れてしまった。",
+    "options": [
+      "たおれて",
+      "やぶれて",
+      "みだれて",
+      "つぶれて"
+    ],
+    "correctIndex": 1,
+    "explanation": "やぶれる (破れる) means 'to be defeated' in the context of a match."
+  },
+  {
+    "question": "この仕事には高い語学力が要求される。",
+    "options": [
+      "ようきゅう",
+      "ようきゅう",
+      "ようきゅう",
+      "よっきゅう"
+    ],
+    "correctIndex": 0,
+    "explanation": "ようきゅう (要求) means 'to demand' or 'requirement'."
+  },
+  {
+    "question": "友達の合格をみんなで祝った。",
+    "options": [
+      "いわった",
+      "いのった",
+      "うらなった",
+      "ねがった"
+    ],
+    "correctIndex": 0,
+    "explanation": "いわう (祝う) means 'to celebrate'."
+  },
+  {
+    "question": "寒かったら、エアコンの温度を調節してください。",
+    "options": [
+      "ちょうさい",
+      "ちょうせい",
+      "ちょうさつ",
+      "ちょうせつ"
+    ],
+    "correctIndex": 3,
+    "explanation": "ちょうせつ (調節) means 'adjustment'."
+  },
+  {
+    "question": "この書類を至急コピーしてきてください。",
+    "options": [
+      "しっきゅう",
+      "ちっきゅう",
+      "しきゅう",
+      "ちきゅう"
+    ],
+    "correctIndex": 2,
+    "explanation": "しきゅう (至急) means 'urgent'."
+  },
+  {
+    "question": "ハトは平和のしょうちょうだと言われている。",
+    "options": [
+      "像徴",
+      "象徴",
+      "象徴",
+      "像徴"
+    ],
+    "correctIndex": 1,
+    "explanation": "The correct kanji for 'symbol' is '象徴'."
+  },
+  {
+    "question": "退院して、しばらくの間、はげしい運動はしないでください。",
+    "options": [
+      "除しい",
+      "激しい",
+      "暴しい",
+      "極しい"
+    ],
+    "correctIndex": 1,
+    "explanation": "The correct kanji for 'intense' is '激しい'."
+  },
+  {
+    "question": "携帯電話に友達の電話番号をとうろくした。",
+    "options": [
+      "登緑",
+      "登録",
+      "答緑",
+      "答録"
+    ],
+    "correctIndex": 1,
+    "explanation": "The correct kanji for 'register' is '登録'."
+  },
+  {
+    "question": "岡田さんを話題の映画にさそった。",
+    "options": [
+      "招った",
+      "勧った",
+      "請った",
+      "誘った"
+    ],
+    "correctIndex": 3,
+    "explanation": "The correct kanji for 'invite' is '誘った'."
+  },
+  {
+    "question": "待ち合わせの時間を６時にへんこうしてもらった。",
+    "options": [
+      "変改",
+      "変更",
+      "変換",
+      "変替"
+    ],
+    "correctIndex": 1,
+    "explanation": "The correct kanji for 'change' is '変更'."
+  }
+]

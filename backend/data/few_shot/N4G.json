@@ -1,0 +1,145 @@
+[
+  {
+    "question": "わたしの 父は 中国語も 英語 ( ) 話せます。",
+    "options": [
+      "を",
+      "で",
+      "も",
+      "が"
+    ],
+    "correctIndex": 3,
+    "explanation": "The particle 'が' is used to indicate ability."
+  },
+  {
+    "question": "これは わたしが 米 ( ) 作った パンです。",
+    "options": [
+      "に",
+      "の",
+      "や",
+      "で"
+    ],
+    "correctIndex": 1,
+    "explanation": "The particle 'の' is a possessive particle, indicating something that was made by using rice."
+  },
+  {
+    "question": "男の子の 顔は 父親より 母親 ( ) にるという 話を 聞いた。",
+    "options": [
+      "に",
+      "へ",
+      "も",
+      "を"
+    ],
+    "correctIndex": 0,
+    "explanation": "The particle 'に' is used to indicate similarity."
+  },
+  {
+    "question": "妹は おしゃべりだ。静かなのは、食事の とき ( ) だ。",
+    "options": [
+      "しか",
+      "だけ",
+      "は",
+      "の"
+    ],
+    "correctIndex": 1,
+    "explanation": "'だけ' implies limitation, meaning she is only quiet during meals."
+  },
+  {
+    "question": "A「誕生日に 田中さんから 何を もらったんですか。」 B「田中さん ( ) 腕時計を もらいました。」",
+    "options": [
+      "からが",
+      "からに",
+      "かれて",
+      "からは"
+    ],
+    "correctIndex": 3,
+    "explanation": "'からは' is used to denote the source of a gift."
+  },
+  {
+    "question": "A「すみません、山田さんは どこですか。」 B「山田さんは 会議中ですが、会議は 11時半 ( ) 終わると 思いますよ。」",
+    "options": [
+      "までは",
+      "まてには",
+      "までも",
+      "までにも"
+    ],
+    "correctIndex": 0,
+    "explanation": "'までは' is used to indicate until a certain time."
+  },
+  {
+    "question": "学生「先生、この言葉は（　）意味ですか。」\n先生「『やさしい』という意味です。」",
+    "options": [
+      "どうやって",
+      "どのぐらい",
+      "どういう",
+      "どう"
+    ],
+    "correctIndex": 2,
+    "explanation": "The question is asking 'what kind of meaning', thus 'どういう' (what kind of) fits best."
+  },
+  {
+    "question": "チャン「吉川さん、このじゃぎょうのレポート、終わりましたか。」\n吉川「はい、1週間かかりましたが、きのうの夜、（　）終わりました。」",
+    "options": [
+      "やっと",
+      "ずっと",
+      "もっと",
+      "きっと"
+    ],
+    "correctIndex": 0,
+    "explanation": "‘やっと’ means 'finally', indicating completion after difficulty."
+  },
+  {
+    "question": "A「わたし、いっしょにドライブに行きませんか。」\nB「（　）、ごめんなさい、あしたはアルバイトがあるんです。」",
+    "options": [
+      "行きたいから",
+      "行きたいけれど",
+      "行きたいし",
+      "行きたくて"
+    ],
+    "correctIndex": 1,
+    "explanation": "‘けれど’ is used when expressing a contrasting situation or feeling ('I want to go, but...')"
+  },
+  {
+    "question": "子ども「ねえ、ゲームをしてもいい？」\n母親「しゅくだいを（　）あとでね。」",
+    "options": [
+      "していた",
+      "している",
+      "する",
+      "した"
+    ],
+    "correctIndex": 3,
+    "explanation": "‘した’ is used to indicate 'after you have done', indicating completion."
+  },
+  {
+    "question": "このすいかは（　）すぎて、れいぞうこに入らない。",
+    "options": [
+      "大き",
+      "大きい",
+      "大きく",
+      "大きくて"
+    ],
+    "correctIndex": 3,
+    "explanation": "‘大きくて’ is the te-form, connecting the two clauses about the watermelon."
+  },
+  {
+    "question": "A「誕生日おめでとうございます。これ、プレゼントです。どうぞ。」\nB「ありがとうございます。大切に（　）。」",
+    "options": [
+      "します",
+      "います",
+      "なります",
+      "あります"
+    ],
+    "correctIndex": 0,
+    "explanation": "‘します’ is used to mean 'I will do (take care of it)'."
+  },
+  {
+    "question": "A「きのうはひっこしを（　）、どうもありがとうございました。」\nB「いいえ、どういたしまして。」",
+    "options": [
+      "手伝って",
+      "手伝ったので",
+      "手伝ってくれて",
+      "手伝ったから"
+    ],
+    "correctIndex": 2,
+    "explanation": "‘手伝ってくれて’ is a form thanking someone for their help."
+  }
+]

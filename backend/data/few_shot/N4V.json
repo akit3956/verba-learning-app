@@ -1,0 +1,101 @@
+[
+  {
+    "question": "靴に石が入っていました。",
+    "options": [
+      "いし",
+      "すな",
+      "くさ",
+      "えだ"
+    ],
+    "correctIndex": 0,
+    "explanation": "The word 石 (いし) means 'stone' or 'rock'."
+  },
+  {
+    "question": "日本でいろいろな経験をしました。",
+    "options": [
+      "けいけん",
+      "けいげん",
+      "けけん",
+      "けげん"
+    ],
+    "correctIndex": 0,
+    "explanation": "The word 経験 (けいけん) means 'experience'."
+  },
+  {
+    "question": "店員にトイレがどこにあるか聞きました。",
+    "options": [
+      "てにん",
+      "てんにん",
+      "ていん",
+      "てんいん"
+    ],
+    "correctIndex": 3,
+    "explanation": "The word 店員 (てんいん) means 'store clerk'."
+  },
+  {
+    "question": "きょうは食堂がこんでいました。",
+    "options": [
+      "しゅくど",
+      "しょくどう",
+      "しょくど",
+      "しゅくどう"
+    ],
+    "correctIndex": 1,
+    "explanation": "The word 食堂 (しょくどう) means 'cafeteria'."
+  },
+  {
+    "question": "このまどから港が見えます。",
+    "options": [
+      "うみ",
+      "みなと",
+      "みずうみ",
+      "いけ"
+    ],
+    "correctIndex": 1,
+    "explanation": "The word 港 (みなと) means 'harbor' or 'port'."
+  },
+  {
+    "question": "この小説はおもしろかったです。",
+    "options": [
+      "しょせつ",
+      "しよせつ",
+      "しょうせつ",
+      "しゅうぜつ"
+    ],
+    "correctIndex": 2,
+    "explanation": "The word 小説 (しょうせつ) means 'novel' or 'story'."
+  },
+  {
+    "question": "まいばん日記を書いています。",
+    "options": [
+      "にっき",
+      "にちき",
+      "にっきい",
+      "にちさい"
+    ],
+    "correctIndex": 0,
+    "explanation": "The word 日記 (にっき) means 'diary'."
+  },
+  {
+    "question": "夕方、雨がふりました。",
+    "options": [
+      "ゆうほう",
+      "ゆうがた",
+      "ゆほう",
+      "ゆがた"
+    ],
+    "correctIndex": 1,
+    "explanation": "The word 夕方 (ゆうがた) means 'evening'."
+  },
+  {
+    "question": "もうすぐ 秋ですね。",
+    "options": [
+      "ふゆ",
+      "なつ",
+      "はる",
+      "あき"
+    ],
+    "correctIndex": 0,
+    "explanation": "The sentence indicates that autumn (秋) is coming, so winter (ふゆ) makes the most sense as the next season."
+  }
+]

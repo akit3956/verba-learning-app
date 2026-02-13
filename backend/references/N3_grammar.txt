@@ -1,0 +1,73 @@
+【N3文法・重要項目と対策】
+
+### 重要な文法項目
+1. **受け身・使役・使役受け身**
+   - 私は母に（叱られました）。（受身）
+   - 部長は私にビールを（飲ませました）。（使役）
+   - 私は部長にビールを（飲まされました）。（使役受身）
+
+2. **〜てしまう / 〜ておく / 〜てある**
+   - 財布を（忘れてしまいました）。（完了・後悔）
+   - 旅行の前に切符を（買っておきます）。（準備）
+   - 壁に地図が（貼ってあります）。（状態）
+
+3. **〜ように / 〜ために**
+   - 日本語が話せる（ように）、毎日練習します。（状態の変化・可能）
+   - 家を買う（ために）、貯金します。（目的）
+
+4. **〜はずだ / 〜わけだ / 〜ことになっている**
+   - カバンがない。（盗まれた）はずだ。
+   - 寒いわけだ。雪が降っている。
+   - 明日は会議をする（ことになっている）。
+
+5. **敬語（尊敬・謙譲・丁寧の使い分け）**
+   - 社長が（おっしゃいました）。
+   - 私が（申し上げます）。
+
+### 過去問風サンプル問題
+（AIはこのスタイルを真似してください）
+
+問題：( )に何を入れますか。1・2・3・4から一番いいものを一つ選んでください。
+
+1. この本は、まだ　読んで　（　　　）から、貸せません。
+   1. います
+   2. いません
+   3. おきません
+   4. しまいました
+   正解: 2 (State of not having done something yet - te imasen)
+
+2. 頑張って　勉強した　（　　　）、試験に　合格できませんでした。
+   1. のに
+   2. ので
+   3. から
+   4. おかげで
+   正解: 1 (Reverse condition/Disappointment - noni)
+
+3. 誰かに　足を踏まれて、痛くて　（　　　）。
+   1. 泣かせました
+   2. 泣かれました
+   3. 泣かされました
+   4. 泣いてしまいました
+   正解: 4 (Involuntary action/Regret - te shimaimashita. OR 3 if forced to cry, but 4 is simpler context here. Actually 3 "made to cry" fits logic if stomped hard, but usually pain -> cry inevitably. Let's use a clearer example for AI reference.)
+   (Better Example):
+   冷蔵庫の　ケーキを　妹に　（　　　）。
+   1. 食べました
+   2. 食べられました
+   3. 食べさせました
+   4. 食べてもらいました
+   正解: 2 (Suffering passive - taberaremashita)
+
+4. 明日までに　レポートを　出して　（　　　）。
+   1. いただきます
+   2. ください
+   3. もらいます
+   4. 差し上げます
+   正解: 2 (Request - te kudasai / Or more natural for N3: "Can you?" -> kuremasenka?)
+   (Reference Text Adjustment: Use standard clear cases)
+
+5. 彼は　日本へ　（　　　）ばかりです。
+   1. 来る
+   2. 来て
+   3. 来た
+   4. 来ない
+   正解: 3 (Just did - ta bakari)

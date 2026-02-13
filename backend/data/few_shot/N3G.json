@@ -1,0 +1,145 @@
+[
+  {
+    "question": "今度の試合に勝てる（ ）一生けんめいがんばります。",
+    "options": [
+      "ために",
+      "ように",
+      "ことに",
+      "みたいに"
+    ],
+    "correctIndex": 1,
+    "explanation": "ように is used to express purpose or goal."
+  },
+  {
+    "question": "今のわたしの安い給料では、何年間働いても自分の家は（ ）そうもない。",
+    "options": [
+      "買い",
+      "買え",
+      "買う",
+      "買える"
+    ],
+    "correctIndex": 1,
+    "explanation": "Potential form 買えない is used to express inability to do something."
+  },
+  {
+    "question": "A「最近、山田さん元気ないね。」\nB「うん。将来の（ ）悩んでるらしいよ。」",
+    "options": [
+      "ほうに",
+      "場合に",
+      "ほかで",
+      "ことで"
+    ],
+    "correctIndex": 3,
+    "explanation": "ことで is used to express the cause of concern."
+  },
+  {
+    "question": "A「ねえ、（ ）どんな人？」\nB「とても親切でいい人だよ。」",
+    "options": [
+      "田中さんが",
+      "田中さんで",
+      "田中さんって",
+      "田中さんでも"
+    ],
+    "correctIndex": 2,
+    "explanation": "って is informal and used for quoting or asking about someone."
+  },
+  {
+    "question": "「沖縄旅行はどうだった？」\nB「海が青くて、料理もおいしくて、最高だったよ。」\nA「いいなあ。わたしも（ ）一度行ってみたいなあ。」",
+    "options": [
+      "いつのまにか",
+      "いつ",
+      "いつでも",
+      "いつか"
+    ],
+    "correctIndex": 3,
+    "explanation": "いつか refers to 'someday' in the future."
+  },
+  {
+    "question": "(デパートでシャツを選びながら)\n山田「明るい色のシャツが欲しいんだけど……。」\n田中「だったら、これ（ ）どう？ 山田さんにすごく似合うと思うよ。」",
+    "options": [
+      "なんか",
+      "ばかり",
+      "へ",
+      "に"
+    ],
+    "correctIndex": 2,
+    "explanation": "へ is used to indicate direction or suggestion."
+  },
+  {
+    "question": "(スーパーで)\n母親「今、お菓子を買った子がケルクくん？」\n子ども「ちがうよ。あそこで泣いてて、お菓子を（ ）子だよ。」",
+    "options": [
+      "欲しい",
+      "欲しがっている",
+      "欲しそうな",
+      "欲しがってみる"
+    ],
+    "correctIndex": 1,
+    "explanation": "欲しがっている indicates someone else's desire."
+  },
+  {
+    "question": "学生：「先生、ご相談したいことがあるのですが、授業の後、先生の研究室に（　）よろしいでしょうか。」先生：「はい、いいですよ。」",
+    "options": [
+      "来られても",
+      "いらっしゃっても",
+      "かかわっても",
+      "行かれても"
+    ],
+    "correctIndex": 1,
+    "explanation": "Polite request using 'いらっしゃっても'."
+  },
+  {
+    "question": "A「昨日からずっと頭が痛いんですが、どこかいい病院を知りませんか。」B「そうですね、ABC病院に行って（　）。」",
+    "options": [
+      "みさせてください",
+      "みてもいいでしょうか",
+      "みさせてほしいのですが",
+      "みたらどうでしょう"
+    ],
+    "correctIndex": 3,
+    "explanation": "Suggestion using 'みたらどうでしょう'."
+  },
+  {
+    "question": "このお菓子は小麦粉と卵と砂糖（　）できています。バターや牛乳は使っていません。",
+    "options": [
+      "ばかり",
+      "ほどで",
+      "だけが",
+      "だけで"
+    ],
+    "correctIndex": 3,
+    "explanation": "'だけで' indicates the composition of the ingredients."
+  },
+  {
+    "question": "A「すみません、山田さんはどこですか。」B「山田さんは会議中ですが、会議は11時半（　）終わると思いますよ。」",
+    "options": [
+      "までには",
+      "までには",
+      "までも",
+      "までも"
+    ],
+    "correctIndex": 1,
+    "explanation": "'までには' is used to indicate a time frame before an event finishes."
+  },
+  {
+    "question": "妹「今日は友だちと晩ご飯を食べてくるね。」兄「わかった。9時過ぎる（　）、迎えに行くから、電話しろよ。」",
+    "options": [
+      "らしいなら",
+      "らしいのに",
+      "ようなら",
+      "ようなのに"
+    ],
+    "correctIndex": 2,
+    "explanation": "'ようなら' is used to indicate a conditional situation."
+  },
+  {
+    "question": "弟「お父さん、どこにいるか知らない？」兄「さっき部屋にいたけど、忙しそうだったよ。」弟「そうか。じゃあ今は（　）。進学のこと、相談したかったんだけど。」",
+    "options": [
+      "話しかけないほうがよさそうだな",
+      "話しかけなくてもよさそうだな",
+      "話しかけないほうがいいそうだな",
+      "話しかけなくてもいいそうだな"
+    ],
+    "correctIndex": 0,
+    "explanation": "'話しかけないほうがよさそうだな' is used to express better not to do something."
+  }
+]
