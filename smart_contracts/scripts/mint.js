@@ -5,13 +5,13 @@ async function main() {
 
     // ▼▼▼ 設定エリア ▼▼▼
     // 1. デプロイ済みのコントラクトアドレスを入力してください
-    const CONTRACT_ADDRESS = "YOUR_CONTRACT_ADDRESS_HERE";
+    const CONTRACT_ADDRESS = "0x32D10f29238b28b67999Ff8586F3f53805aB1468";
 
     // 2. 送り先（通常はOwner自身のアドレス）
     const TO_ADDRESS = owner.address;
 
     // 3. 発行したい枚数
-    const MINT_AMOUNT = "100000"; // 例: 10万枚
+    const MINT_AMOUNT = "50000000"; // 5,000万枚
     // ▲▲▲ 設定エリア ▲▲▲
 
     console.log(`Minting ${MINT_AMOUNT} VRB to ${TO_ADDRESS}...`);

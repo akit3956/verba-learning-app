@@ -1,9 +1,9 @@
+import API_BASE_URL from "../api_config";
 import React, { useState, useEffect } from 'react';
 import { Wallet as WalletIcon, History, Send, ArrowRight, User, TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
 
-const USER_ID = "user_1"; // Hardcoded for prototype
-
 function Wallet() {
+    const [userId, setUserId] = useState(null);
     const [balance, setBalance] = useState(null);
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -13,11 +13,18 @@ function Wallet() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            const balanceRes = await fetch(`http://localhost:8000/api/wallet/balance/${USER_ID}`);
-            const balanceData = await balanceRes.json();
-            setBalance(balanceData);
+            const token = localStorage.getItem('token');
+            const meRes = await fetch(API_BASE_URL + '/auth/me', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
 
-            const txRes = await fetch(`http://localhost:8000/api/wallet/transactions/${USER_ID}`);
+            if (!meRes.ok) throw new Error('Failed to fetch user');
+
+            const userData = await meRes.json();
+            setUserId(userData.id);
+            setBalance({ balance: userData.vrb_balance, username: userData.username });
+
+            const txRes = await fetch(`${API_BASE_URL}/api/wallet/transactions/${userData.id}`);
             const txData = await txRes.json();
             setTransactions(txData);
         } catch (err) {
@@ -35,14 +42,14 @@ function Wallet() {
         e.preventDefault();
         setMessage('');
 
-        if (!transferData.receiver || !transferData.amount) return;
+        if (!transferData.receiver || !transferData.amount || !userId) return;
 
         try {
-            const res = await fetch('http://localhost:8000/api/wallet/transfer', {
+            const res = await fetch(API_BASE_URL + '/api/wallet/transfer', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    sender_id: USER_ID,
+                    sender_id: userId,
                     receiver_id: transferData.receiver,
                     amount: parseInt(transferData.amount),
                     description: "User Transfer"
@@ -88,9 +95,7 @@ function Wallet() {
                 <div style={{ fontSize: '3.5rem', fontWeight: 'bold', margin: '10px 0', lineHeight: 1 }}>
                     {balance ? balance.balance : 0} <span style={{ fontSize: '1.5rem' }}>VRB</span>
                 </div>
-                <div style={{ background: 'rgba(255,255,255,0.2)', display: 'inline-block', padding: '4px 12px', borderRadius: '20px', fontSize: '0.9rem', marginBottom: '10px' }}>
-                    ≈ ${(balance ? balance.balance * 0.01 : 0).toFixed(2)} USD
-                </div>
+
                 <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>User: {balance ? balance.username : 'Guest'}</div>
             </div>
 

@@ -7,3 +7,7 @@ openai
 httpx
 pdfplumber
 google-generativeai
+bcrypt
+python-jose[cryptography]
+python-multipart
+psycopg2-binary

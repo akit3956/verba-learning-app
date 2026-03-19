@@ -15,7 +15,7 @@ from prompts import get_quiz_prompt, get_aki_style_prompt
 
 # New Modules (Trigger Reload)
 from database import init_db
-from routers import wallet, materials
+from routers import wallet, materials, auth
 import config
 from pdf_utils import get_random_page_image
 from pdf_context import load_context_for_level
@@ -42,13 +42,14 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 # Include Routers
+app.include_router(auth.router)
 app.include_router(wallet.router)
 app.include_router(materials.router)
 
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify the frontend origin
+    allow_origins=["*"],  # Allow all origins for local network access
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -91,9 +92,10 @@ async def get_models():
     models.append({"name": "gpt-4o", "type": "cloud", "size": "OpenAI"})
     models.append({"name": "gpt-4-turbo", "type": "cloud", "size": "OpenAI"})
     models.append({"name": "gpt-3.5-turbo", "type": "cloud", "size": "OpenAI"})
+    models.append({"name": "gemini-2.5-flash", "type": "cloud", "size": "Google"})
     models.append({"name": "gemini-2.0-flash", "type": "cloud", "size": "Google"})
     models.append({"name": "gemini-flash-latest", "type": "cloud", "size": "Google"})
-    models.append({"name": "gemini-2.0-flash-lite-001", "type": "cloud", "size": "Google"})
+
     
     # Add Ollama models
     try:
@@ -180,7 +182,7 @@ async def generate_quiz(req: GenerateRequest):
                         # Gemini 1.5 supports JSON response schema via generation_config
                         response = model.generate_content(
                             prompt,
-                            generation_config={"response_mime_type": "application/json", "temperature": 0.3}
+                            generation_config={"response_mime_type": "application/json", "temperature": 0.7}
                         )
                         content = response.text
                         print(f"=== Gemini Response ===\n{content}\n===")

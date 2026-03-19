@@ -1,3 +1,4 @@
+import API_BASE_URL from "../api_config";
 import React, { useState, useEffect } from 'react';
 import { BookOpen, MessageCircle, PenTool, Sparkles, RefreshCw, Layers, FileText, Settings } from 'lucide-react';
 import QuestionCard from '../components/QuestionCard';
@@ -29,7 +30,7 @@ function Quiz() {
     useEffect(() => {
         const fetchModelsAndConfig = async () => {
             try {
-                const res = await fetch('http://localhost:8000/models');
+                const res = await fetch(API_BASE_URL + '/models');
                 if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
                 const data = await res.json();
                 console.log("Models fetched:", data);
@@ -63,7 +64,7 @@ function Quiz() {
         setPdfImage(null);
 
         try {
-            const res = await fetch('http://localhost:8000/api/mock-test', {
+            const res = await fetch(API_BASE_URL + '/api/mock-test', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ level, model })
@@ -96,7 +97,7 @@ function Quiz() {
         setPdfImage(null);
 
         try {
-            const response = await fetch('http://localhost:8000/generate', {
+            const response = await fetch(API_BASE_URL + '/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ level, category, mode, model, include_image: includeImage }),
@@ -150,7 +151,7 @@ function Quiz() {
 
         if (totalReward > 0) {
             try {
-                await fetch('http://localhost:8000/api/wallet/reward', {
+                await fetch(API_BASE_URL + '/api/wallet/reward', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -283,118 +284,138 @@ function Quiz() {
                             <span><RefreshCw className="spin" size={20} style={{ verticalAlign: 'middle', marginRight: 5 }} /> 生成中...</span>
                         ) : '問題を生成する (Start)'}
                     </button>
+
+                    {loading && (
+                        <div className="loading-container" style={{ marginTop: '2rem' }}>
+                            <div className="loading-dots">
+                                <div className="dot"></div>
+                                <div className="dot"></div>
+                                <div className="dot"></div>
+                            </div>
+                            <div className="loading-text">
+                                AIが一生懸命考えています...
+                            </div>
+                        </div>
+                    )}
                 </>
-            )}
+            )
+            }
 
             {error && <div style={{ color: 'red', marginTop: 20, textAlign: 'center' }}>{error}</div>}
 
             {/* Default Quiz View */}
-            {mode !== 'pdf_mock' && questionQueue.length > 0 && !showResults && (
-                <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', color: 'var(--text-light)' }}>
-                        <span>Mode: {mode === 'single' ? 'Single' : mode === 'small_test' ? 'Small Test' : 'Mock Test'}</span>
-                        <span style={{ fontWeight: 'bold' }}>Q {currentIndex + 1} / {questionQueue.length}</span>
-                    </div>
-
-                    <QuestionCard
-                        data={questionQueue[currentIndex]}
-                        onAnswer={handleAnswer}
-                        answered={answered}
-                        selectedAnswer={selectedAnswer}
-                    />
-
-                    {answered && (
-                        <div style={{ marginTop: '2rem', textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
-                            {mode === 'single' ? (
-                                <>
-                                    <button className="generate-btn" style={{ width: 'auto', background: '#a0aec0' }} onClick={() => { setQuestionQueue([]); setShowResults(false); }}>
-                                        終了する (Home)
-                                    </button>
-                                    <button className="generate-btn" style={{ width: 'auto' }} onClick={handleGenerate}>
-                                        次の問題を作る (Next)
-                                    </button>
-                                </>
-                            ) : (
-                                <button className="generate-btn" style={{ width: 'auto', background: '#4a5568' }} onClick={handleNext}>
-                                    {currentIndex < questionQueue.length - 1 ? '次の問題へ (Next) ->' : '結果を見る (Finish) ->'}
-                                </button>
-                            )}
+            {
+                mode !== 'pdf_mock' && questionQueue.length > 0 && !showResults && (
+                    <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem', color: 'var(--text-light)' }}>
+                            <span>Mode: {mode === 'single' ? 'Single' : mode === 'small_test' ? 'Small Test' : 'Mock Test'}</span>
+                            <span style={{ fontWeight: 'bold' }}>Q {currentIndex + 1} / {questionQueue.length}</span>
                         </div>
-                    )}
-                </div>
-            )}
+
+                        <QuestionCard
+                            data={questionQueue[currentIndex]}
+                            onAnswer={handleAnswer}
+                            answered={answered}
+                            selectedAnswer={selectedAnswer}
+                        />
+
+                        {answered && (
+                            <div style={{ marginTop: '2rem', textAlign: 'right', display: 'flex', justifyContent: 'flex-end', gap: '1rem' }}>
+                                {mode === 'single' ? (
+                                    <>
+                                        <button className="generate-btn" style={{ width: 'auto', background: '#a0aec0' }} onClick={() => { setQuestionQueue([]); setShowResults(false); }}>
+                                            終了する (Home)
+                                        </button>
+                                        <button className="generate-btn" style={{ width: 'auto' }} onClick={handleGenerate}>
+                                            次の問題を作る (Next)
+                                        </button>
+                                    </>
+                                ) : (
+                                    <button className="generate-btn" style={{ width: 'auto', background: '#4a5568' }} onClick={handleNext}>
+                                        {currentIndex < questionQueue.length - 1 ? '次の問題へ (Next) ->' : '結果を見る (Finish) ->'}
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )
+            }
 
             {/* PDF Mock Test View (Split View) with Interactive Selection */}
-            {mode === 'pdf_mock' && questionQueue.length > 0 && (
-                <div className="mock-test-layout" style={{ display: 'flex', gap: '2rem', marginTop: '2rem', flexWrap: 'wrap' }}>
-                    {/* Left: PDF Image */}
-                    <div className="pdf-viewer" style={{ flex: 1, minWidth: '300px' }}>
-                        <h3>Original Exam</h3>
-                        {pdfImage ? (
-                            <div className="image-area" style={{ marginTop: '0.5rem' }}>
-                                <img src={`data:image/png;base64,${pdfImage}`} alt="Exam Page" style={{ width: '100%', borderRadius: '8px' }} />
-                            </div>
-                        ) : <div>No PDF Image</div>}
-                    </div>
-
-                    {/* Right: Interactive List */}
-                    <div className="interactive-quiz" style={{ flex: 1, minWidth: '300px' }}>
-                        <h3>Extracted Questions</h3>
-                        {questionQueue.map((q, idx) => (
-                            <div key={idx} className="quiz-card" style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e5e7eb', marginBottom: '1rem' }}>
-                                <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Q{idx + 1}. {q.question}</div>
-                                <div className="options" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
-                                    {q.options.map((opt, i) => {
-                                        const isSelected = selectedAnswer && selectedAnswer[idx] === i;
-                                        return (
-                                            <div
-                                                key={i}
-                                                onClick={() => setSelectedAnswer(prev => ({ ...prev, [idx]: i }))}
-                                                style={{
-                                                    padding: '0.5rem',
-                                                    background: isSelected ? '#3182ce' : '#f9fafb',
-                                                    color: isSelected ? 'white' : 'black',
-                                                    border: isSelected ? '1px solid #3182ce' : '1px solid #d1d5db',
-                                                    borderRadius: '4px',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.2s'
-                                                }}
-                                            >
-                                                {opt}
-                                            </div>
-                                        );
-                                    })}
+            {
+                mode === 'pdf_mock' && questionQueue.length > 0 && (
+                    <div className="mock-test-layout" style={{ display: 'flex', gap: '2rem', marginTop: '2rem', flexWrap: 'wrap' }}>
+                        {/* Left: PDF Image */}
+                        <div className="pdf-viewer" style={{ flex: 1, minWidth: '300px' }}>
+                            <h3>Original Exam</h3>
+                            {pdfImage ? (
+                                <div className="image-area" style={{ marginTop: '0.5rem' }}>
+                                    <img src={`data:image/png;base64,${pdfImage}`} alt="Exam Page" style={{ width: '100%', borderRadius: '8px' }} />
                                 </div>
-                                <details style={{ marginTop: '1rem', color: '#666', cursor: 'pointer' }}>
-                                    <summary>Show Answer</summary>
-                                    <div style={{ marginTop: '0.5rem', color: '#10b981', fontWeight: 'bold' }}>
-                                        Answer: {q.options[q.correctIndex]}
-                                    </div>
-                                    <div style={{ fontSize: '0.9rem' }}>{q.explanation}</div>
-                                </details>
-                            </div>
-                        ))}
-                        <button className="generate-btn" style={{ width: '100%', marginTop: '1rem', background: '#a0aec0' }} onClick={() => { setQuestionQueue([]); setPdfImage(null); setSelectedAnswer(null); }}>
-                            試験を終了する (Finish)
-                        </button>
-                    </div>
-                </div>
-            )}
+                            ) : <div>No PDF Image</div>}
+                        </div>
 
-            {showResults && (
-                <ResultSummary
-                    results={results}
-                    earnedToken={earnedToken}
-                    onRetry={handleGenerate}
-                    onRetryMistakes={handleRetryMistakes}
-                    onHome={() => {
-                        setQuestionQueue([]);
-                        setShowResults(false);
-                        setEarnedToken(0);
-                    }}
-                />
-            )}
-        </div>
+                        {/* Right: Interactive List */}
+                        <div className="interactive-quiz" style={{ flex: 1, minWidth: '300px' }}>
+                            <h3>Extracted Questions</h3>
+                            {questionQueue.map((q, idx) => (
+                                <div key={idx} className="quiz-card" style={{ background: 'white', padding: '1.5rem', borderRadius: '12px', border: '1px solid #e5e7eb', marginBottom: '1rem' }}>
+                                    <div style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>Q{idx + 1}. {q.question}</div>
+                                    <div className="options" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                                        {q.options.map((opt, i) => {
+                                            const isSelected = selectedAnswer && selectedAnswer[idx] === i;
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    onClick={() => setSelectedAnswer(prev => ({ ...prev, [idx]: i }))}
+                                                    style={{
+                                                        padding: '0.5rem',
+                                                        background: isSelected ? '#3182ce' : '#f9fafb',
+                                                        color: isSelected ? 'white' : 'black',
+                                                        border: isSelected ? '1px solid #3182ce' : '1px solid #d1d5db',
+                                                        borderRadius: '4px',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.2s'
+                                                    }}
+                                                >
+                                                    {opt}
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    <details style={{ marginTop: '1rem', color: '#666', cursor: 'pointer' }}>
+                                        <summary>Show Answer</summary>
+                                        <div style={{ marginTop: '0.5rem', color: '#10b981', fontWeight: 'bold' }}>
+                                            Answer: {q.options[q.correctIndex]}
+                                        </div>
+                                        <div style={{ fontSize: '0.9rem' }}>{q.explanation}</div>
+                                    </details>
+                                </div>
+                            ))}
+                            <button className="generate-btn" style={{ width: '100%', marginTop: '1rem', background: '#a0aec0' }} onClick={() => { setQuestionQueue([]); setPdfImage(null); setSelectedAnswer(null); }}>
+                                試験を終了する (Finish)
+                            </button>
+                        </div>
+                    </div>
+                )
+            }
+
+            {
+                showResults && (
+                    <ResultSummary
+                        results={results}
+                        earnedToken={earnedToken}
+                        onRetry={handleGenerate}
+                        onRetryMistakes={handleRetryMistakes}
+                        onHome={() => {
+                            setQuestionQueue([]);
+                            setShowResults(false);
+                            setEarnedToken(0);
+                        }}
+                    />
+                )
+            }
+        </div >
     );
 }
 

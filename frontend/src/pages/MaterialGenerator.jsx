@@ -1,9 +1,10 @@
+import API_BASE_URL from "../api_config";
 import React, { useState, useEffect, useRef } from 'react';
 import { BookOpen, Copy, Upload, Settings, RefreshCw, Image as ImageIcon, Download } from 'lucide-react';
 
 const CATEGORIES = {
     reading: '読解テキスト生成',
-    practice: '例文・例題作成',
+    practice: '会話・文脈練習',
     quiz: 'クイズ作成',
     vocab: '語彙リスト作成'
 };
@@ -39,7 +40,7 @@ function MaterialGenerator() {
     const loadModels = async () => {
         try {
             // Get Models
-            const modelsResp = await fetch('http://localhost:8000/models');
+            const modelsResp = await fetch(API_BASE_URL + '/models');
             const modelData = await modelsResp.json();
             setAvailableModels(modelData.models || []);
 
@@ -68,7 +69,7 @@ function MaterialGenerator() {
         setUploading(true);
 
         try {
-            const res = await fetch('http://localhost:8000/api/materials/upload-reference', {
+            const res = await fetch(API_BASE_URL + '/api/materials/upload-reference', {
                 method: 'POST',
                 body: formData
             });
@@ -97,7 +98,7 @@ function MaterialGenerator() {
         setGeneratedImage('');
 
         try {
-            const res = await fetch('http://localhost:8000/api/materials/generate', {
+            const res = await fetch(API_BASE_URL + '/api/materials/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ category, level, topic, model, reference_text: referenceText })
@@ -120,7 +121,7 @@ function MaterialGenerator() {
         if (!topic) return;
         setImageLoading(true);
         try {
-            const res = await fetch('http://localhost:8000/api/materials/image', {
+            const res = await fetch(API_BASE_URL + '/api/materials/image', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ prompt: topic, model })
@@ -249,7 +250,18 @@ function MaterialGenerator() {
             {/* Results */}
             {(generatedContent || loading) && (
                 <div style={{ marginTop: '2rem' }}>
-                    {loading && <div id="loader" className="placeholder">Generating content... please wait.</div>}
+                    {loading && (
+                        <div className="loading-container">
+                            <div className="loading-dots">
+                                <div className="dot"></div>
+                                <div className="dot"></div>
+                                <div className="dot"></div>
+                            </div>
+                            <div className="loading-text">
+                                AIが一生懸命考えています...
+                            </div>
+                        </div>
+                    )}
 
                     {!loading && generatedContent && (
                         <>
