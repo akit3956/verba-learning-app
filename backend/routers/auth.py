@@ -9,6 +9,8 @@ import os
 import uuid
 import psycopg2
 import psycopg2.extras
+import secrets
+import hashlib
 
 # Re-use from database.py
 from database import get_db_connection
@@ -36,6 +38,20 @@ class UserResponse(BaseModel):
     id: str
     username: str
     vrb_balance: int
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
+
+class AdminUserResponse(BaseModel):
+    id: str
+    username: Optional[str] = None
+    email: Optional[str] = None
+    vrb_balance: int
+    created_at: Optional[datetime] = None
 
 def verify_password(plain_password, hashed_password):
     try:
@@ -145,3 +161,95 @@ async def read_users_me(current_user: dict = Depends(get_current_user)):
         username=current_user["username"],
         vrb_balance=current_user["vrb_balance"]
     )
+
+@router.post("/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    conn = get_db_connection()
+    c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    # Check if user exists
+    c.execute("SELECT id FROM users WHERE email = %s", (request.email,))
+    user = c.fetchone()
+    
+    if user:
+        # Generate token
+        token = secrets.token_urlsafe(32)
+        token_hash = hashlib.sha256(token.encode('utf-8')).hexdigest()
+        expires_at = datetime.utcnow() + timedelta(hours=1)
+        
+        c.execute("""
+            INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
+            VALUES (%s, %s, %s)
+        """, (user['id'], token_hash, expires_at))
+        conn.commit()
+        
+        # Simulate sending email
+        print(f"\n[SIMULATED EMAIL] Password reset request for {request.email}")
+        print(f"Reset Token: {token}\n")
+        
+    c.close()
+    conn.close()
+    
+    # Always return a generic success message to prevent email enumeration
+    return {"message": "If that email is registered, a password reset link has been generated (check terminal for token)."}
+
+@router.post("/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    token_hash = hashlib.sha256(request.token.encode('utf-8')).hexdigest()
+    
+    conn = get_db_connection()
+    c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    # Find active token
+    c.execute("""
+        SELECT * FROM password_reset_tokens 
+        WHERE token_hash = %s AND used = FALSE AND expires_at > %s
+    """, (token_hash, datetime.utcnow()))
+    reset_record = c.fetchone()
+    
+    if not reset_record:
+        c.close()
+        conn.close()
+        raise HTTPException(status_code=400, detail="Invalid or expired token")
+        
+    # Update user password
+    hashed_password = get_password_hash(request.new_password)
+    try:
+        c.execute("UPDATE users SET password_hash = %s WHERE id = %s", (hashed_password, reset_record['user_id']))
+        c.execute("UPDATE password_reset_tokens SET used = TRUE WHERE id = %s", (reset_record['id'],))
+        conn.commit()
+    except Exception:
+        conn.rollback()
+        c.close()
+        conn.close()
+        raise HTTPException(status_code=500, detail="Failed to reset password")
+        
+    c.close()
+    conn.close()
+    
+    return {"message": "Password has been successfully reset."}
+
+@router.get("/users", response_model=list[AdminUserResponse])
+async def get_all_users(current_user: dict = Depends(get_current_user)):
+    # Simple Admin Check: Ensure this is Aki's account
+    if current_user.get("email") != "aki@example.com" and current_user.get("username") != "Aki":
+        raise HTTPException(status_code=403, detail="Forbidden, admin only branch")
+        
+    conn = get_db_connection()
+    c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    c.execute("SELECT id, username, email, vrb_balance, created_at FROM users ORDER BY created_at DESC")
+    users = c.fetchall()
+    
+    c.close()
+    conn.close()
+    
+    return [
+        AdminUserResponse(
+            id=u["id"],
+            username=u["username"],
+            email=u["email"],
+            vrb_balance=u["vrb_balance"] if u["vrb_balance"] is not None else 0,
+            created_at=u["created_at"]
+        ) for u in users
+    ]

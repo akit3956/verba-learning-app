@@ -4,10 +4,12 @@ import { LogIn, UserPlus, Lock, User, AlertCircle, Sparkles, Mail } from 'lucide
 
 const Auth = ({ onLogin }) => {
     const [isLogin, setIsLogin] = useState(true);
+    const [isForgotPassword, setIsForgotPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [successMsg, setSuccessMsg] = useState('');
     const [loading, setLoading] = useState(false);
     const [isFounderFlow, setIsFounderFlow] = useState(false);
 
@@ -26,8 +28,14 @@ const Auth = ({ onLogin }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
+        setSuccessMsg('');
 
-        if (isLogin) {
+        if (isForgotPassword) {
+            if (!email) {
+                setError('Please enter your email address');
+                return;
+            }
+        } else if (isLogin) {
             if (!email || !password) {
                 setError('Please fill in all fields');
                 return;
@@ -44,6 +52,21 @@ const Auth = ({ onLogin }) => {
         const endpoint = isLogin ? '/auth/login' : '/auth/register';
 
         try {
+            if (isForgotPassword) {
+                const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Failed to send reset request.');
+                }
+                setSuccessMsg(data.message || 'Password reset link generated.');
+                return;
+            }
+
             let body, headers;
             // OAuth2PasswordRequestForm expects x-www-form-urlencoded
             if (isLogin) {
@@ -91,11 +114,15 @@ const Auth = ({ onLogin }) => {
                 )}
 
                 <div style={styles.header}>
-                    <h2 style={styles.title}>{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
+                    <h2 style={styles.title}>
+                        {isForgotPassword ? 'Reset Password' : (isLogin ? 'Welcome Back' : 'Create Account')}
+                    </h2>
                     <p style={styles.subtitle}>
-                        {isLogin
-                            ? 'Sign in to continue your JLPT learning journey'
-                            : 'Sign up to start learning and earning VRB Tokens'}
+                        {isForgotPassword 
+                            ? 'Enter your email to receive a password reset link'
+                            : (isLogin
+                                ? 'Sign in to continue your JLPT learning journey'
+                                : 'Sign up to start learning and earning VRB Tokens')}
                     </p>
                 </div>
 
@@ -105,9 +132,16 @@ const Auth = ({ onLogin }) => {
                         <span>{error}</span>
                     </div>
                 )}
+                
+                {successMsg && (
+                    <div style={{...styles.error, background: '#f0fff4', color: '#2f855a', borderColor: '#c6f6d5'}}>
+                        <Sparkles size={18} />
+                        <span>{successMsg}</span>
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} style={styles.form}>
-                    {!isLogin && (
+                    {(!isLogin && !isForgotPassword) && (
                         <div style={styles.inputGroup}>
                             <div style={styles.inputIconWrapper}>
                                 <User size={18} style={styles.inputIcon} />
@@ -135,18 +169,32 @@ const Auth = ({ onLogin }) => {
                         />
                     </div>
 
-                    <div style={styles.inputGroup}>
-                        <div style={styles.inputIconWrapper}>
-                            <Lock size={18} style={styles.inputIcon} />
+                    {!isForgotPassword && (
+                        <div style={styles.inputGroup}>
+                            <div style={styles.inputIconWrapper}>
+                                <Lock size={18} style={styles.inputIcon} />
+                            </div>
+                            <input
+                                type="password"
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                style={styles.input}
+                            />
                         </div>
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            style={styles.input}
-                        />
-                    </div>
+                    )}
+                    
+                    {isLogin && !isForgotPassword && (
+                        <div style={{ textAlign: 'right', marginTop: '-8px' }}>
+                            <button 
+                                type="button" 
+                                onClick={() => { setIsForgotPassword(true); setError(''); setSuccessMsg(''); }}
+                                style={{ background: 'none', border: 'none', color: '#3182ce', fontSize: '13px', cursor: 'pointer', padding: 0 }}
+                            >
+                                Forgot Password?
+                            </button>
+                        </div>
+                    )}
 
                     <button
                         type="submit"
@@ -159,6 +207,8 @@ const Auth = ({ onLogin }) => {
                                 <span className="dot" style={{ width: '8px', height: '8px', background: 'white' }}></span>
                                 <span className="dot" style={{ width: '8px', height: '8px', background: 'white' }}></span>
                             </span>
+                        ) : isForgotPassword ? (
+                            <><Mail size={18} /> Send Reset Link</>
                         ) : isLogin ? (
                             <><LogIn size={18} /> Sign In</>
                         ) : (
@@ -168,15 +218,27 @@ const Auth = ({ onLogin }) => {
                 </form>
 
                 <div style={styles.footer}>
-                    <p style={styles.switchText}>
-                        {isLogin ? "Don't have an account? " : "Already have an account? "}
-                        <button
-                            onClick={() => setIsLogin(!isLogin)}
-                            style={styles.switchButton}
-                        >
-                            {isLogin ? 'Sign up' : 'Sign in'}
-                        </button>
-                    </p>
+                    {isForgotPassword ? (
+                        <p style={styles.switchText}>
+                            Remember your password?{' '}
+                            <button
+                                onClick={() => { setIsForgotPassword(false); setIsLogin(true); setError(''); setSuccessMsg(''); }}
+                                style={styles.switchButton}
+                            >
+                                Back to sign in
+                            </button>
+                        </p>
+                    ) : (
+                        <p style={styles.switchText}>
+                            {isLogin ? "Don't have an account? " : "Already have an account? "}
+                            <button
+                                onClick={() => { setIsLogin(!isLogin); setError(''); setSuccessMsg(''); }}
+                                style={styles.switchButton}
+                            >
+                                {isLogin ? 'Sign up' : 'Sign in'}
+                            </button>
+                        </p>
+                    )}
                 </div>
             </div>
         </div>

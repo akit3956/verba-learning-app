@@ -48,6 +48,18 @@ def init_db():
         )
     ''')
     
+    # Password Reset Tokens
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS password_reset_tokens (
+            id SERIAL PRIMARY KEY,
+            user_id TEXT,
+            token_hash TEXT,
+            expires_at TIMESTAMP,
+            used BOOLEAN DEFAULT FALSE,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    ''')
+    
     # Check if password_hash column exists (Migration)
     c.execute("""
         SELECT column_name 

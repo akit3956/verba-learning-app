@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Home, PenTool, Wallet as WalletIcon, LogOut } from 'lucide-react';
+import { Home, PenTool, Wallet as WalletIcon, LogOut, LayoutDashboard } from 'lucide-react';
 import Quiz from './pages/Quiz';
 import MaterialGenerator from './pages/MaterialGenerator';
 import Wallet from './pages/Wallet';
 import Auth from './pages/Auth';
+import ResetPassword from './pages/ResetPassword';
+import AdminDashboard from './pages/AdminDashboard';
 import './App.css';
 
 // Simple Nav Component
@@ -34,6 +36,9 @@ function NavBar({ onLogout }) {
         </Link>
         <Link to="/wallet" className={getLinkStyle('/wallet')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
           <WalletIcon size={20} /> Wallet
+        </Link>
+        <Link to="/admin" className={getLinkStyle('/admin')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
+          <LayoutDashboard size={20} /> Admin
         </Link>
       </div>
 
@@ -72,26 +77,32 @@ function App() {
     setToken(null);
   };
 
-  if (!token) {
-    return (
-      <div className="container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-        <Auth onLogin={handleLogin} />
-      </div>
-    );
-  }
-
   return (
     <Router>
       <div className="container">
-        <NavBar onLogout={handleLogout} />
-        <div className="content-wrapper">
+        {!token ? (
           <Routes>
-            <Route path="/" element={<Quiz />} />
-            <Route path="/generator" element={<MaterialGenerator />} />
-            <Route path="/wallet" element={<Wallet />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="*" element={
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
+                <Auth onLogin={handleLogin} />
+              </div>
+            } />
           </Routes>
-        </div>
+        ) : (
+          <>
+            <NavBar onLogout={handleLogout} />
+            <div className="content-wrapper">
+              <Routes>
+                <Route path="/" element={<Quiz />} />
+                <Route path="/generator" element={<MaterialGenerator />} />
+                <Route path="/wallet" element={<Wallet />} />
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </div>
+          </>
+        )}
       </div>
     </Router>
   );
