@@ -312,18 +312,8 @@ async def generate_mock_test(req: MockTestRequest):
     if error:
         raise HTTPException(status_code=404, detail=error)
     
-    # 2. Call OpenAI Vision
-    # Re-use global openai_client if defined, or create new simple one used in config check?
-    # main.py defines 'openai_client' globally.
+    current_api_key_openai = req.api_key or os.getenv("OPENAI_API_KEY") or config.get_config().get("openai_api_key")
     
-    current_api_key = req.api_key or os.getenv("OPENAI_API_KEY") or config.get_config().get("openai_api_key")
-    
-    if not current_api_key:
-         raise HTTPException(status_code=401, detail="OpenAI API Key not configured")
-
-    # Always instantiate client to ensure we use the correct key (request specific or global)
-    client = AsyncOpenAI(api_key=current_api_key)
-
     prompt = f"""
     You are a Japanese exam digitizer. 
     Analyze this image from a JLPT {req.level} exam.
@@ -348,30 +338,50 @@ async def generate_mock_test(req: MockTestRequest):
     """
     
     try:
-        # Force use of a Vision-capable model (GPT-4o) regardless of frontend selection
-        # because generic text models (like gpt-3.5) cannot process images.
-        vision_model = "gpt-4o"
-        
-        response = await client.chat.completions.create(
-            model=vision_model,
-            messages=[
+        if req.model.startswith("gemini"):
+            gemini_key = os.getenv("GEMINI_API_KEY") or config.get_config().get("gemini_api_key")
+            if not gemini_key:
+                 raise HTTPException(status_code=401, detail="Gemini API Key not configured")
+            
+            genai.configure(api_key=gemini_key)
+            model_instance = genai.GenerativeModel(req.model)
+            
+            response = model_instance.generate_content([
+                prompt,
                 {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/png;base64,{data['image_base64']}"
-                            },
-                        },
-                    ],
+                    "mime_type": "image/png", 
+                    "data": data['image_base64']
                 }
-            ],
-            max_tokens=1500,
-        )
-        
-        content = response.choices[0].message.content
+            ], generation_config={"response_mime_type": "application/json", "temperature": 0.2})
+            
+            content = response.text
+        else:
+            if not current_api_key_openai:
+                 raise HTTPException(status_code=401, detail="OpenAI API Key not configured")
+            
+            client = AsyncOpenAI(api_key=current_api_key_openai)
+            vision_model = "gpt-4o"
+            
+            response = await client.chat.completions.create(
+                model=vision_model,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": prompt},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": f"data:image/png;base64,{data['image_base64']}"
+                                },
+                            },
+                        ],
+                    }
+                ],
+                max_tokens=1500,
+            )
+            content = response.choices[0].message.content
+            
         clean = re.sub(r'```json\s*|\s*```', '', content).strip()
         
         try:
