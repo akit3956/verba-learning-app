@@ -238,9 +238,11 @@ function Quiz() {
                             <button className={`mode-btn ${mode === 'mock_test' ? 'active' : ''}`} onClick={() => setMode('mock_test')}>
                                 <Layers size={18} /> 模擬テスト (10問)
                             </button>
+                            {/* PDF Mock feature temporarily disabled for improvements
                             <button className={`mode-btn ${mode === 'pdf_mock' ? 'active' : ''}`} onClick={() => setMode('pdf_mock')}>
                                 <Layers size={18} /> 模擬試験
                             </button>
+                            */}
                         </div>
                     </div>
 
@@ -345,17 +347,9 @@ function Quiz() {
             {
                 mode === 'pdf_mock' && questionQueue.length > 0 && (
                     <div className="mock-test-layout" style={{ display: 'flex', gap: '2rem', marginTop: '2rem', flexWrap: 'wrap' }}>
-                        {/* Left: PDF Image */}
-                        <div className="pdf-viewer" style={{ flex: 1, minWidth: '300px' }}>
-                            <h3>Original Exam</h3>
-                            {pdfImage ? (
-                                <div className="image-area" style={{ marginTop: '0.5rem' }}>
-                                    <img src={`data:image/png;base64,${pdfImage}`} alt="Exam Page" style={{ width: '100%', borderRadius: '8px' }} />
-                                </div>
-                            ) : <div>No PDF Image</div>}
-                        </div>
+                        {/* Removed: Original PDF Image Viewer (Left Side) */}
 
-                        {/* Right: Interactive List */}
+                        {/* Interactive List */}
                         <div className="interactive-quiz" style={{ flex: 1, minWidth: '300px' }}>
                             <h3>Extracted Questions</h3>
                             {questionQueue.map((q, idx) => (
