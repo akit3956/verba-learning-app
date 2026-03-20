@@ -148,7 +148,7 @@ async def generate_quiz(req: GenerateRequest):
         for i in range(count):
             try:
                 # Use Jay's Aki Style Prompt
-                prompt = get_aki_style_prompt(req.level, req.topic, req.category, loop_index=i, total_count=count)
+                prompt = get_aki_style_prompt(req.level, req.topic, req.category, loop_index=i, total_count=count, reference_text=reference_text)
                 
                 # --- LLM Call ---
                 is_openai = req.model.startswith("gpt-")
