@@ -90,7 +90,7 @@ st.divider()
 
 # Pricing Plans (CTA)
 st.header("⚡ Choose Your Plan")
-st.write("Verbaで制限なく学習を進めるためのプランを選んでください。(Choose a plan to fully unlock Verba.)")
+st.write("Select a plan to fully unlock Verba and start learning without limits.")
 
 st.markdown("<br>", unsafe_allow_html=True)
 st.info("💡 Please review the Terms of Service and Privacy Policy before proceeding.")
@@ -98,7 +98,9 @@ st.page_link("pages/2_📜_Terms_&_Privacy.py", label="Read the full Terms of Se
 agree = st.checkbox("I agree to the Terms of Service and Privacy Policy")
 
 if not agree:
-    st.warning("⚠️ 決済を進めるには、上記の利用規約とプライバシーポリシーに同意してください。 (Agreement is required to proceed.)")
+    st.warning("⚠️ Please check the box above to agree to the Terms of Service and Privacy Policy to proceed with payment.")
+else:
+    st.success("✅ Agreement confirmed. Please choose your plan below.")
 
 # Get PayPal Client ID
 paypal_client_id = st.secrets.get("PAYPAL_CLIENT_ID", "test")
@@ -117,7 +119,7 @@ def render_paypal_button(container_id, amount, plan_name, redirect_url):
                 style: {{ shape: 'rect', color: 'gold', layout: 'vertical', label: 'pay' }},
                 onClick: function(data, actions) {{
                   if (!{js_agreed}) {{
-                    alert("⚠️ 決済に進むには、「利用規約とプライバシーポリシーに同意します」のチェックボックスにチェックを入れてください。");
+                    alert("⚠️ Please check the agreement checkbox before proceeding to payment.");
                     return actions.reject();
                   }}
                   return actions.resolve();
@@ -132,13 +134,14 @@ def render_paypal_button(container_id, amount, plan_name, redirect_url):
                     document.getElementById('{container_id}').style.display = 'none';
                     const successDiv = document.createElement('div');
                     successDiv.innerHTML = `
-                      <h4 style="color: #2e7d32; font-family: sans-serif;">✅ 決済完了！</h4>
+                      <h4 style="color: #2e7d32; font-family: sans-serif;">✅ Payment Successful!</h4>
+                      <p style="font-size: 14px; font-family: sans-serif;">Thank you for your support. Please click the button below to complete your registration.</p>
                       <a href="{redirect_url}" target="_blank" 
                          style="display: inline-block; background-color: #FFD140; color: #000; 
                                 padding: 10px 20px; text-decoration: none; font-weight: bold; 
                                 border-radius: 8px; font-family: sans-serif; font-size: 14px;
                                 box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        登録画面へ 👉
+                        Go to Registration 👉
                       </a>
                     `;
                     document.body.appendChild(successDiv);
@@ -154,36 +157,45 @@ def render_paypal_button(container_id, amount, plan_name, redirect_url):
 
 with col_std:
     st.markdown("### 🥉 Standard")
-    st.markdown("**( $4.99 / 月 )**")
+    st.markdown("**( $4.99 / Month )**")
     st.markdown("""
-    - ✅ 基本機能のみ (Basic features)
-    - ✅ 一問一答・小テスト
-    - 🔒 全項目・模擬試験は利用不可
+    - ✅ Basic features only
+    - ✅ Daily Quizzes & Practice
+    - 🔒 Mock Exams & Premium Content Locked
     """)
     st.markdown("<br>", unsafe_allow_html=True)
-    render_paypal_button("paypal-btn-std", "4.99", "standard", "Register?payment=success&plan=standard")
+    if agree:
+        render_paypal_button("paypal-btn-std", "4.99", "standard", "Register?payment=success&plan=standard")
+    else:
+        st.button("Pay with PayPal", key="disabled-std", disabled=True)
 
 with col_pro:
     st.markdown("### 🥈 Pro")
-    st.markdown("**( $12.99 / 月 )**")
+    st.markdown("**( $12.99 / Month )**")
     st.markdown("""
-    - ✅ **全機能解放** (All features)
-    - ✅ 模擬試験（AI画像認識）
-    - ✅ 優先サポート
+    - ✅ **All features unlocked**
+    - ✅ AI-powered Mock Exams
+    - ✅ Priority Support
     """)
     st.markdown("<br>", unsafe_allow_html=True)
-    render_paypal_button("paypal-btn-pro", "12.99", "pro", "Register?payment=success&plan=pro")
+    if agree:
+        render_paypal_button("paypal-btn-pro", "12.99", "pro", "Register?payment=success&plan=pro")
+    else:
+        st.button("Pay with PayPal", key="disabled-pro", disabled=True)
 
 with col_founder:
     st.markdown("### 🥇 Founder's Club")
-    st.markdown("**( $30.00 / 買い切り )**")
-    st.warning("限定100名 (Limited 100)")
+    st.markdown("**( $30.00 / One-time )**")
+    st.warning("Limited Offer (100 spots only)")
     st.markdown("""
-    - ✅ **一生涯全機能解放**
-    - ✅ **10,000 VRB 初期ボーナス**
-    - ✅ 限定Discord参加権
+    - ✅ **Lifetime access to all features**
+    - ✅ **10,000 VRB Early-bird Bonus**
+    - ✅ Exclusive Discord Access
     """)
-    render_paypal_button("paypal-btn-founder", "30.00", "founder", "Register?payment=success&plan=founder")
+    if agree:
+        render_paypal_button("paypal-btn-founder", "30.00", "founder", "Register?payment=success&plan=founder")
+    else:
+        st.button("Pay with PayPal", key="disabled-founder", disabled=True)
 
 st.divider()
 
