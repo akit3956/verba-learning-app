@@ -34,8 +34,64 @@ const AdminDashboard = () => {
         }
     };
 
+    const [config, setConfig] = useState({
+        model: '',
+        openai_api_key: '',
+        gemini_api_key: ''
+    });
+    const [configLoading, setConfigLoading] = useState(false);
+    const [configSuccess, setConfigSuccess] = useState(false);
+
+    const fetchConfig = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/config`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setConfig(data);
+            }
+        } catch (err) {
+            console.error("Failed to fetch config:", err);
+        }
+    };
+
+    const handleConfigChange = (e) => {
+        const { name, value } = e.target;
+        setConfig(prev => ({ ...prev, [name]: value }));
+    };
+
+    const saveConfig = async (e) => {
+        e.preventDefault();
+        setConfigLoading(true);
+        setConfigSuccess(false);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/config`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(config)
+            });
+            if (response.ok) {
+                setConfigSuccess(true);
+                setTimeout(() => setConfigSuccess(false), 3000);
+            } else {
+                alert("Failed to update configuration");
+            }
+        } catch (err) {
+            alert("Error updating configuration: " + err.message);
+        } finally {
+            setConfigLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchUsers();
+        fetchConfig();
     }, []);
 
     if (error) {
@@ -55,19 +111,55 @@ const AdminDashboard = () => {
                     <LayoutDashboard size={28} color="#3182ce" />
                     <h1 style={styles.title}>Admin Dashboard</h1>
                 </div>
-                <button onClick={fetchUsers} style={styles.refreshBtn} disabled={loading}>
+                <button onClick={() => { fetchUsers(); fetchConfig(); }} style={styles.refreshBtn} disabled={loading}>
                     <RefreshCcw size={18} className={loading ? "spin" : ""} />
                     Refresh
                 </button>
             </div>
 
-            <div style={styles.statsCard}>
-                <div style={styles.statIcon}>
-                    <Users size={24} color="#2b6cb0" />
+            <div style={styles.grid}>
+                {/* Stats Card */}
+                <div style={styles.statsCard}>
+                    <div style={styles.statIcon}>
+                        <Users size={24} color="#2b6cb0" />
+                    </div>
+                    <div>
+                        <h3 style={styles.statLabel}>Total Registered Accounts</h3>
+                        <p style={styles.statValue}>{loading ? '...' : users.length}</p>
+                    </div>
                 </div>
-                <div>
-                    <h3 style={styles.statLabel}>Total Registered Accounts</h3>
-                    <p style={styles.statValue}>{loading ? '...' : users.length}</p>
+
+                {/* API Config Card */}
+                <div style={styles.configCard}>
+                    <h2 style={{ fontSize: '18px', marginBottom: '16px', color: '#2d3748' }}>System Configuration</h2>
+                    <form onSubmit={saveConfig}>
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>OpenAI API Key</label>
+                            <input 
+                                type="password" 
+                                name="openai_api_key"
+                                value={config.openai_api_key}
+                                onChange={handleConfigChange}
+                                style={styles.input}
+                                placeholder="sk-proj-..."
+                            />
+                        </div>
+                        <div style={styles.formGroup}>
+                            <label style={styles.label}>Gemini API Key</label>
+                            <input 
+                                type="password" 
+                                name="gemini_api_key"
+                                value={config.gemini_api_key}
+                                onChange={handleConfigChange}
+                                style={styles.input}
+                                placeholder="AIza..."
+                            />
+                        </div>
+                        <button type="submit" style={styles.saveBtn} disabled={configLoading}>
+                            {configLoading ? 'Saving...' : 'Update Keys'}
+                        </button>
+                        {configSuccess && <span style={styles.successMsg}>✓ Updated Successfully</span>}
+                    </form>
                 </div>
             </div>
 
@@ -163,6 +255,12 @@ const styles = {
         color: '#4a5568',
         transition: 'all 0.2s',
     },
+    grid: {
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: '30px',
+        marginBottom: '30px',
+    },
     statsCard: {
         display: 'flex',
         alignItems: 'center',
@@ -171,8 +269,49 @@ const styles = {
         padding: '24px',
         borderRadius: '12px',
         boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-        marginBottom: '30px',
         border: '1px solid #edf2f7',
+    },
+    configCard: {
+        background: 'white',
+        padding: '24px',
+        borderRadius: '12px',
+        boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
+        border: '1px solid #edf2f7',
+    },
+    formGroup: {
+        marginBottom: '16px',
+    },
+    label: {
+        display: 'block',
+        fontSize: '14px',
+        fontWeight: '500',
+        color: '#4a5568',
+        marginBottom: '6px',
+    },
+    input: {
+        width: '100%',
+        padding: '10px 12px',
+        borderRadius: '6px',
+        border: '1px solid #e2e8f0',
+        fontSize: '14px',
+        color: '#2d3748',
+        boxSizing: 'border-box',
+    },
+    saveBtn: {
+        background: '#3182ce',
+        color: 'white',
+        border: 'none',
+        padding: '10px 20px',
+        borderRadius: '8px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        transition: 'background 0.2s',
+    },
+    successMsg: {
+        color: '#38a169',
+        fontSize: '14px',
+        marginLeft: '12px',
+        fontWeight: '500',
     },
     statIcon: {
         background: '#ebf8ff',
