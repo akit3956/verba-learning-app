@@ -68,23 +68,21 @@ with col1:
 with col2:
     st.markdown("### 🛠️ Q2 2026")
     st.caption("Development")
-    st.info("🚀 Public Beta & L2E Engine Launch")
-    st.info("🏪 VRB Store Implementation")
+    st.success("✅ Public Beta & L2E Engine Launch")
+    st.success("✅ VRB Store Implementation")
     st.write("Release of the Verba Web App with 3 membership tiers (Standard / Pro / Founders). Earn and use tokens for premium JLPT mock exams.")
 
 with col3:
     st.markdown("### 🌑 Q3 2026")
     st.caption("Token")
     st.info("💰 VRB Airdrop")
-    st.info("🎁 10,000 VRB Bonus")
-    st.write("Distribute tokens to early supporters and Founders.")
+    st.write("Distribute 10,000 VRB tokens to early supporters and Founders.")
 
 with col4:
     st.markdown("### 🚀 Q4 2026")
     st.caption("Global")
     st.warning("🌏 Official Release")
-    st.warning("📈 DEX Listing")
-    st.write("Public listing on Decentralized Exchanges and global expansion.")
+    st.write("Public listing on Decentralized Exchanges (DEX) and global expansion.")
 
 st.divider()
 
