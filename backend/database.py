@@ -111,6 +111,24 @@ def init_db():
             conn.rollback()
             pass
 
+    # Settings Table (Persistent Config)
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS settings (
+            key TEXT PRIMARY KEY,
+            value TEXT
+        )
+    ''')
+    
+    # Seed default settings from env if not already in DB
+    default_settings = {
+        "model": os.getenv("DEFAULT_MODEL", "gemma2"),
+        "openai_api_key": os.getenv("OPENAI_API_KEY", ""),
+        "gemini_api_key": os.getenv("GEMINI_API_KEY", "")
+    }
+    
+    for key, val in default_settings.items():
+        c.execute("INSERT INTO settings (key, value) VALUES (%s, %s) ON CONFLICT (key) DO NOTHING", (key, val))
+
     # Seed default user if not exists
     c.execute("SELECT * FROM users WHERE id = 'user_1'")
     if not c.fetchone():

@@ -1,39 +1,66 @@
 import os
-import json
 from dotenv import load_dotenv
 
 load_dotenv()
 
-CONFIG_FILE = os.path.join(os.path.dirname(__file__), "config.json")
+def get_db_connection():
+    import psycopg2
+    DB_URL = os.getenv("DATABASE_URL")
+    if not DB_URL:
+        return None
+    return psycopg2.connect(DB_URL)
 
 def load_config():
-    default_config = {
-        "model": "gemma2",
+    # Initial defaults from ENV
+    config_dict = {
+        "model": os.getenv("DEFAULT_MODEL", "gemma2"),
         "openai_api_key": os.getenv("OPENAI_API_KEY", ""),
         "gemini_api_key": os.getenv("GEMINI_API_KEY", "")
     }
-    if os.path.exists(CONFIG_FILE):
-        try:
-            with open(CONFIG_FILE, "r") as f:
-                saved = json.load(f)
-                default_config.update(saved)
-        except Exception as e:
-            print(f"Error loading config: {e}")
-    return default_config
+    
+    conn = get_db_connection()
+    if not conn:
+        return config_dict
+        
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT key, value FROM settings")
+        rows = cur.fetchall()
+        for key, value in rows:
+            if key in config_dict:
+                config_dict[key] = value
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error loading config from DB: {e}")
+        
+    return config_dict
 
+# In-memory cache for performance
 global_config = load_config()
 
 def get_config():
     return global_config
 
-def save_config():
-    try:
-        with open(CONFIG_FILE, "w") as f:
-            json.dump(global_config, f, indent=4)
-    except Exception as e:
-        print(f"Error saving config: {e}")
-
 def update_config(key, value):
-    if key in global_config:
-        global_config[key] = value
-        save_config()
+    global_config[key] = value
+    
+    conn = get_db_connection()
+    if not conn:
+        return
+        
+    try:
+        cur = conn.cursor()
+        cur.execute("INSERT INTO settings (key, value) VALUES (%s, %s) ON CONFLICT (key) DO REPLACE SET value = EXCLUDED.value", (key, value))
+        # Wait, PostgreSQL syntax for REPLACE is different.
+        cur.execute("""
+            INSERT INTO settings (key, value) 
+            VALUES (%s, %s) 
+            ON CONFLICT (key) 
+            DO UPDATE SET value = EXCLUDED.value
+        """, (key, value))
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"Error saving config to DB: {e}")
