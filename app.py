@@ -69,19 +69,22 @@ with col2:
     st.markdown("### 🛠️ Q2 2026")
     st.caption("Development")
     st.info("🚀 Public Beta & L2E Engine Launch")
-    st.write("Release of the Verba Web App with 3 membership tiers (Standard / Pro / Founders). Implementation of the \"VRB Store\" where users can unlock premium JLPT mock exams using earned tokens.")
+    st.info("🏪 VRB Store Implementation")
+    st.write("Release of the Verba Web App with 3 membership tiers (Standard / Pro / Founders). Earn and use tokens for premium JLPT mock exams.")
 
 with col3:
     st.markdown("### 🌑 Q3 2026")
     st.caption("Token")
     st.info("💰 VRB Airdrop")
-    st.write("Distribute 10,000 VRB tokens to early supporters")
+    st.info("🎁 10,000 VRB Bonus")
+    st.write("Distribute tokens to early supporters and Founders.")
 
 with col4:
     st.markdown("### 🚀 Q4 2026")
     st.caption("Global")
     st.warning("🌏 Official Release")
-    st.write("Public listing on DEX (Decentralized Exchange).")
+    st.warning("📈 DEX Listing")
+    st.write("Public listing on Decentralized Exchanges and global expansion.")
 
 st.divider()
 
@@ -96,8 +99,6 @@ agree = st.checkbox("I agree to the Terms of Service and Privacy Policy")
 
 if not agree:
     st.warning("⚠️ 決済を進めるには、上記の利用規約とプライバシーポリシーに同意してください。 (Agreement is required to proceed.)")
-else:
-    st.success("✅ 規約に同意しました。プランを選択してください。")
 
 # Get PayPal Client ID
 paypal_client_id = st.secrets.get("PAYPAL_CLIENT_ID", "test")
@@ -132,7 +133,6 @@ def render_paypal_button(container_id, amount, plan_name, redirect_url):
                     const successDiv = document.createElement('div');
                     successDiv.innerHTML = `
                       <h4 style="color: #2e7d32; font-family: sans-serif;">✅ 決済完了！</h4>
-                      <p style="font-size: 14px; font-family: sans-serif;">お支払いありがとうございます。以下のボタンから登録を完了してください。</p>
                       <a href="{redirect_url}" target="_blank" 
                          style="display: inline-block; background-color: #FFD140; color: #000; 
                                 padding: 10px 20px; text-decoration: none; font-weight: bold; 
@@ -161,10 +161,7 @@ with col_std:
     - 🔒 全項目・模擬試験は利用不可
     """)
     st.markdown("<br>", unsafe_allow_html=True)
-    if agree:
-        render_paypal_button("paypal-btn-std", "4.99", "standard", "Register?payment=success&plan=standard")
-    else:
-        st.button("Pay with PayPal", key="disabled-std", disabled=True)
+    render_paypal_button("paypal-btn-std", "4.99", "standard", "Register?payment=success&plan=standard")
 
 with col_pro:
     st.markdown("### 🥈 Pro")
@@ -175,10 +172,7 @@ with col_pro:
     - ✅ 優先サポート
     """)
     st.markdown("<br>", unsafe_allow_html=True)
-    if agree:
-        render_paypal_button("paypal-btn-pro", "12.99", "pro", "Register?payment=success&plan=pro")
-    else:
-        st.button("Pay with PayPal", key="disabled-pro", disabled=True)
+    render_paypal_button("paypal-btn-pro", "12.99", "pro", "Register?payment=success&plan=pro")
 
 with col_founder:
     st.markdown("### 🥇 Founder's Club")
@@ -189,10 +183,7 @@ with col_founder:
     - ✅ **10,000 VRB 初期ボーナス**
     - ✅ 限定Discord参加権
     """)
-    if agree:
-        render_paypal_button("paypal-btn-founder", "30.00", "founder", "Register?payment=success&plan=founder")
-    else:
-        st.button("Pay with PayPal", key="disabled-founder", disabled=True)
+    render_paypal_button("paypal-btn-founder", "30.00", "founder", "Register?payment=success&plan=founder")
 
 st.divider()
 
