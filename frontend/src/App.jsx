@@ -1,3 +1,4 @@
+import API_BASE_URL from "./api_config";
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { Home, PenTool, Wallet as WalletIcon, LogOut, LayoutDashboard } from 'lucide-react';
@@ -10,11 +11,13 @@ import AdminDashboard from './pages/AdminDashboard';
 import './App.css';
 
 // Simple Nav Component
-function NavBar({ onLogout }) {
+function NavBar({ onLogout, userPlan }) {
   const location = useLocation();
   const getLinkStyle = (path) => {
     return location.pathname === path ? 'nav-item active' : 'nav-item';
   };
+
+  const isStandard = userPlan?.toLowerCase() === 'standard';
 
   return (
     <nav className="nav-bar" style={{
@@ -31,19 +34,27 @@ function NavBar({ onLogout }) {
         <Link to="/" className={getLinkStyle('/')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
           <Home size={20} /> JLPT Quiz
         </Link>
-        <Link to="/generator" className={getLinkStyle('/generator')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
-          <PenTool size={20} /> Teacher Tools
-        </Link>
+        {!isStandard && (
+          <Link to="/generator" className={getLinkStyle('/generator')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
+            <PenTool size={20} /> Teacher Tools
+          </Link>
+        )}
         <Link to="/wallet" className={getLinkStyle('/wallet')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
           <WalletIcon size={20} /> Wallet
         </Link>
-        <Link to="/admin" className={getLinkStyle('/admin')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
-          <LayoutDashboard size={20} /> Admin
-        </Link>
+        {!isStandard && (
+          <Link to="/admin" className={getLinkStyle('/admin')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
+            <LayoutDashboard size={20} /> Admin
+          </Link>
+        )}
       </div>
 
-      <button
-        onClick={onLogout}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        <span style={{ fontSize: '12px', color: '#a0aec0', background: '#f8fafc', padding: '4px 8px', borderRadius: '4px' }}>
+          Plan: {userPlan}
+        </span>
+        <button
+          onClick={onLogout}
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -61,20 +72,42 @@ function NavBar({ onLogout }) {
       >
         <LogOut size={18} /> Logout
       </button>
+      </div>
     </nav>
   );
 }
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [userPlan, setUserPlan] = useState('standard');
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      if (!token) return;
+      try {
+        const res = await fetch(API_BASE_URL + '/auth/me', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUserPlan(data.plan_type || 'standard');
+        }
+      } catch (err) {
+        console.error("Failed to fetch plan:", err);
+      }
+    };
+    fetchUser();
+  }, [token]);
 
   const handleLogin = (newToken) => {
     setToken(newToken);
+    localStorage.setItem('token', newToken);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     setToken(null);
+    setUserPlan('standard');
   };
 
   return (
@@ -91,11 +124,11 @@ function App() {
           </Routes>
         ) : (
           <>
-            <NavBar onLogout={handleLogout} />
+            <NavBar onLogout={handleLogout} userPlan={userPlan} />
             <div className="content-wrapper">
               <Routes>
-                <Route path="/" element={<Quiz />} />
-                <Route path="/generator" element={<MaterialGenerator />} />
+                <Route path="/" element={<Quiz userPlan={userPlan} />} />
+                <Route path="/generator" element={<MaterialGenerator userPlan={userPlan} />} />
                 <Route path="/wallet" element={<Wallet />} />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="*" element={<Navigate to="/" replace />} />

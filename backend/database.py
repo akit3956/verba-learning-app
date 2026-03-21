@@ -31,6 +31,7 @@ def init_db():
             password_hash TEXT,
             vrb_balance INTEGER DEFAULT 0,
             nationality TEXT,
+            plan_type TEXT DEFAULT 'standard',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -101,7 +102,15 @@ def init_db():
         except Exception:
             conn.rollback()
             pass
-        
+            
+    # Check if plan_type exists
+    if "plan_type" not in columns:
+        try:
+            c.execute("ALTER TABLE users ADD COLUMN plan_type TEXT DEFAULT 'standard'")
+        except Exception:
+            conn.rollback()
+            pass
+
     # Seed default user if not exists
     c.execute("SELECT * FROM users WHERE id = 'user_1'")
     if not c.fetchone():

@@ -6,18 +6,19 @@ from database import get_db_connection, UserBalance, Transaction
 
 router = APIRouter(prefix="/api/wallet", tags=["wallet"])
 
+from routers.auth import get_current_user
+
 class RewardRequest(BaseModel):
-    user_id: str
     amount: int
     description: str
 
 class SpendRequest(BaseModel):
-    user_id: str
     amount: int
     description: str
 
-@router.get("/balance/{user_id}", response_model=UserBalance)
-async def get_balance(user_id: str):
+@router.get("/balance", response_model=UserBalance)
+async def get_balance(current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
     conn = get_db_connection()
     c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     c.execute("SELECT * FROM users WHERE id = %s", (user_id,))
@@ -34,8 +35,9 @@ async def get_balance(user_id: str):
         balance=user["vrb_balance"]
     )
 
-@router.get("/transactions/{user_id}")
-async def get_transactions(user_id: str):
+@router.get("/transactions")
+async def get_transactions(current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
     conn = get_db_connection()
     c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     c.execute("SELECT * FROM transactions WHERE user_id = %s ORDER BY timestamp DESC LIMIT 50", (user_id,))
@@ -56,12 +58,13 @@ async def get_transactions(user_id: str):
     return transactions
 
 @router.post("/reward")
-async def add_reward(req: RewardRequest):
+async def add_reward(req: RewardRequest, current_user: dict = Depends(get_current_user)):
     conn = get_db_connection()
     c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     
     # Check user
-    c.execute("SELECT vrb_balance FROM users WHERE id = %s", (req.user_id,))
+    user_id = current_user["id"]
+    c.execute("SELECT vrb_balance FROM users WHERE id = %s", (user_id,))
     user = c.fetchone()
     if not user:
         c.close()
@@ -71,11 +74,11 @@ async def add_reward(req: RewardRequest):
     new_balance = user["vrb_balance"] + req.amount
     
     # Update balance
-    c.execute("UPDATE users SET vrb_balance = %s WHERE id = %s", (new_balance, req.user_id))
+    c.execute("UPDATE users SET vrb_balance = %s WHERE id = %s", (new_balance, user_id))
     
     # Log transaction
     c.execute("INSERT INTO transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
-              (req.user_id, req.amount, 'reward', req.description))
+              (user_id, req.amount, 'reward', req.description))
     
     conn.commit()
     c.close()
@@ -84,12 +87,13 @@ async def add_reward(req: RewardRequest):
     return {"status": "success", "new_balance": new_balance}
 
 @router.post("/spend")
-async def spend_tokens(req: SpendRequest):
+async def spend_tokens(req: SpendRequest, current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
     conn = get_db_connection()
     c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     
     # Check user
-    c.execute("SELECT vrb_balance FROM users WHERE id = %s", (req.user_id,))
+    c.execute("SELECT vrb_balance FROM users WHERE id = %s", (user_id,))
     user = c.fetchone()
     if not user:
         c.close()
@@ -104,11 +108,11 @@ async def spend_tokens(req: SpendRequest):
     new_balance = user["vrb_balance"] - req.amount
     
     # Update balance
-    c.execute("UPDATE users SET vrb_balance = %s WHERE id = %s", (new_balance, req.user_id))
+    c.execute("UPDATE users SET vrb_balance = %s WHERE id = %s", (new_balance, user_id))
     
     # Log transaction
     c.execute("INSERT INTO transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
-              (req.user_id, req.amount, 'spend', req.description))
+              (user_id, req.amount, 'spend', req.description))
     
     conn.commit()
     c.close()
@@ -117,18 +121,18 @@ async def spend_tokens(req: SpendRequest):
     return {"status": "success", "new_balance": new_balance}
 
 class TransferRequest(BaseModel):
-    sender_id: str
     receiver_id: str
     amount: int
     description: str = "Transfer"
 
 @router.post("/transfer")
-async def transfer_tokens(req: TransferRequest):
+async def transfer_tokens(req: TransferRequest, current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
     conn = get_db_connection()
     c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     
     # 1. Check Sender
-    c.execute("SELECT vrb_balance FROM users WHERE id = %s", (req.sender_id,))
+    c.execute("SELECT vrb_balance FROM users WHERE id = %s", (user_id,))
     sender = c.fetchone()
     if not sender:
         c.close()
@@ -152,15 +156,15 @@ async def transfer_tokens(req: TransferRequest):
     new_sender_bal = sender["vrb_balance"] - req.amount
     new_receiver_bal = receiver["vrb_balance"] + req.amount
     
-    c.execute("UPDATE users SET vrb_balance = %s WHERE id = %s", (new_sender_bal, req.sender_id))
+    c.execute("UPDATE users SET vrb_balance = %s WHERE id = %s", (new_sender_bal, user_id))
     c.execute("UPDATE users SET vrb_balance = %s WHERE id = %s", (new_receiver_bal, req.receiver_id))
     
     # 4. Log Transactions (Both sides)
     c.execute("INSERT INTO transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
-              (req.sender_id, req.amount, 'transfer_out', f"To {req.receiver_id}: {req.description}"))
+              (user_id, req.amount, 'transfer_out', f"To {req.receiver_id}: {req.description}"))
     
     c.execute("INSERT INTO transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
-              (req.receiver_id, req.amount, 'transfer_in', f"From {req.sender_id}: {req.description}"))
+              (req.receiver_id, req.amount, 'transfer_in', f"From {user_id}: {req.description}"))
     
     conn.commit()
     c.close()

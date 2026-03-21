@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { Wallet as WalletIcon, History, Send, ArrowRight, User, TrendingUp, TrendingDown, Sparkles } from 'lucide-react';
 
 function Wallet() {
-    const [userId, setUserId] = useState(null);
     const [balance, setBalance] = useState(null);
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -21,10 +20,11 @@ function Wallet() {
             if (!meRes.ok) throw new Error('Failed to fetch user');
 
             const userData = await meRes.json();
-            setUserId(userData.id);
             setBalance({ balance: userData.vrb_balance, username: userData.username });
-
-            const txRes = await fetch(`${API_BASE_URL}/api/wallet/transactions/${userData.id}`);
+            
+            const txRes = await fetch(`${API_BASE_URL}/api/wallet/transactions`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             const txData = await txRes.json();
             setTransactions(txData);
         } catch (err) {
@@ -42,14 +42,17 @@ function Wallet() {
         e.preventDefault();
         setMessage('');
 
-        if (!transferData.receiver || !transferData.amount || !userId) return;
+        if (!transferData.receiver || !transferData.amount) return;
 
         try {
+            const token = localStorage.getItem('token');
             const res = await fetch(API_BASE_URL + '/api/wallet/transfer', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({
-                    sender_id: userId,
                     receiver_id: transferData.receiver,
                     amount: parseInt(transferData.amount),
                     description: "User Transfer"

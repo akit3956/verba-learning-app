@@ -1,12 +1,11 @@
 import API_BASE_URL from "../api_config";
 import React, { useState, useEffect } from 'react';
-import { BookOpen, MessageCircle, PenTool, Sparkles, RefreshCw, Layers, FileText, Settings } from 'lucide-react';
+import { BookOpen, MessageCircle, PenTool, Sparkles, RefreshCw, Layers, FileText, Settings, Lock } from 'lucide-react';
 import QuestionCard from '../components/QuestionCard';
 import ResultSummary from '../components/ResultSummary';
 
-const USER_ID = "user_1"; // Mock Logged-in User
 
-function Quiz() {
+function Quiz({ userPlan }) {
     const [level, setLevel] = useState('N4');
     const [category, setCategory] = useState('grammar');
     const [mode, setMode] = useState('single');
@@ -25,6 +24,7 @@ function Quiz() {
     const [error, setError] = useState('');
     const [answered, setAnswered] = useState(false);
     const [selectedAnswer, setSelectedAnswer] = useState(null);
+    // userPlan is now a prop from App.jsx
 
     // Fetch available models and config on mount
     useEffect(() => {
@@ -54,6 +54,12 @@ function Quiz() {
     }, []);
 
     const handlePdfMockGenerate = async () => {
+        if (userPlan?.toLowerCase() === 'standard') {
+            if (window.confirm("🔒 Standardプランでは模擬試験（AI画像認識）は利用できません。プロプランにアップグレードしますか？")) {
+                window.location.href = "http://localhost:8501"; // Redirect to LP
+            }
+            return;
+        }
         setLoading(true);
         setError('');
         setAnswered(false);
@@ -64,9 +70,13 @@ function Quiz() {
         setPdfImage(null);
 
         try {
+            const token = localStorage.getItem('token');
             const res = await fetch(API_BASE_URL + '/api/mock-test', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ level, model })
             });
             if (!res.ok) {
@@ -87,6 +97,10 @@ function Quiz() {
     };
 
     const handleGenerate = async () => {
+        if (mode === 'mock_test' && userPlan?.toLowerCase() === 'standard') {
+            alert("🔒 Standardプランでは模擬テストは利用できません。");
+            return;
+        }
         setLoading(true);
         setError('');
         setAnswered(false);
@@ -97,18 +111,25 @@ function Quiz() {
         setPdfImage(null);
 
         try {
+            const token = localStorage.getItem('token');
             const response = await fetch(API_BASE_URL + '/generate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ level, category, mode, model, include_image: includeImage }),
             });
 
-            if (!response.ok) throw new Error('Generation failed');
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.detail || 'Generation failed');
+            }
             const data = await response.json();
 
             setQuestionQueue(data);
         } catch (err) {
-            setError('問題の生成に失敗しました。サーバーを確認してください。');
+            setError(err.message || '問題の生成に失敗しました。サーバーを確認してください。');
             console.error(err);
         } finally {
             setLoading(false);
@@ -151,11 +172,14 @@ function Quiz() {
 
         if (totalReward > 0) {
             try {
+                const token = localStorage.getItem('token');
                 await fetch(API_BASE_URL + '/api/wallet/reward', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
                     body: JSON.stringify({
-                        user_id: USER_ID,
                         amount: totalReward,
                         description: `Quiz Reward: ${category} ${level}`
                     })
@@ -235,14 +259,21 @@ function Quiz() {
                             <button className={`mode-btn ${mode === 'small_test' ? 'active' : ''}`} onClick={() => setMode('small_test')}>
                                 <Layers size={18} /> 小テスト (5問)
                             </button>
-                            <button className={`mode-btn ${mode === 'mock_test' ? 'active' : ''}`} onClick={() => setMode('mock_test')}>
-                                <Layers size={18} /> 模擬テスト (10問)
+                            <button 
+                                className={`mode-btn ${mode === 'mock_test' ? 'active' : ''} ${userPlan?.toLowerCase() === 'standard' ? 'locked' : ''}`} 
+                                onClick={() => {
+                                    if (userPlan?.toLowerCase() === 'standard') {
+                                        if (window.confirm("🔒 Standardプランでは模擬テストは利用できません。プロプランにアップグレードしますか？")) {
+                                            window.location.href = "http://localhost:8501"; // Redirect to LP
+                                        }
+                                    } else {
+                                        setMode('mock_test');
+                                    }
+                                }}
+                                style={{ opacity: userPlan?.toLowerCase() === 'standard' ? 0.6 : 1 }}
+                            >
+                                {userPlan?.toLowerCase() === 'standard' ? <Lock size={18} /> : <Layers size={18} />} 模擬テスト (10問)
                             </button>
-                            {/* PDF Mock feature temporarily disabled for improvements
-                            <button className={`mode-btn ${mode === 'pdf_mock' ? 'active' : ''}`} onClick={() => setMode('pdf_mock')}>
-                                <Layers size={18} /> 模擬試験
-                            </button>
-                            */}
                         </div>
                     </div>
 

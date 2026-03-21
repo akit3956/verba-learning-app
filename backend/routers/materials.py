@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, File, UploadFile
+from fastapi import APIRouter, HTTPException, File, UploadFile, Depends
+from routers.auth import get_current_user
 from pydantic import BaseModel
 import httpx
 import os
@@ -31,7 +32,9 @@ class ImageRequest(BaseModel):
     model: str = "gpt-4o" # or ollama model
 
 @router.post("/generate")
-async def generate_material(req: MaterialRequest):
+async def generate_material(req: MaterialRequest, current_user: dict = Depends(get_current_user)):
+    if current_user.get("plan_type", "standard") == "standard":
+        raise HTTPException(status_code=403, detail="Standardプランではティーチャーツールは利用できません。Proプランへアップグレードしてください。")
     prompt = get_generation_prompt(req.category, req.level, req.topic, req.reference_text)
     
     # OpenAI Logic
@@ -109,7 +112,9 @@ async def generate_material(req: MaterialRequest):
 
 
 @router.post("/image")
-async def generate_image(req: ImageRequest):
+async def generate_image(req: ImageRequest, current_user: dict = Depends(get_current_user)):
+    if current_user.get("plan_type", "standard") == "standard":
+        raise HTTPException(status_code=403, detail="Standardプランでは画像生成機能は利用できません。")
     # STEP 1: Translate/Expand Prompt using LLM (Ollama or OpenAI)
     translation_prompt = f"""
     Convert the following Japanese topic into a list of 5-8 descriptive English keywords for image generation.
@@ -164,7 +169,9 @@ async def generate_image(req: ImageRequest):
     return {"image_url": image_url}
 
 @router.post("/upload-reference")
-async def upload_reference(file: UploadFile = File(...)):
+async def upload_reference(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    if current_user.get("plan_type", "standard") == "standard":
+        raise HTTPException(status_code=403, detail="Standardプランではファイルアップロード機能は利用できません。")
     filename = file.filename.lower()
     content = await file.read()
     

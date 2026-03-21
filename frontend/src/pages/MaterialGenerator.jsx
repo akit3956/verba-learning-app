@@ -1,6 +1,6 @@
 import API_BASE_URL from "../api_config";
 import React, { useState, useEffect, useRef } from 'react';
-import { BookOpen, Copy, Upload, Settings, RefreshCw, Image as ImageIcon, Download } from 'lucide-react';
+import { BookOpen, Copy, Upload, Settings, RefreshCw, Image as ImageIcon, Download, Lock } from 'lucide-react';
 
 const CATEGORIES = {
     reading: '読解テキスト生成',
@@ -9,7 +9,8 @@ const CATEGORIES = {
     vocab: '語彙リスト作成'
 };
 
-function MaterialGenerator() {
+function MaterialGenerator({ userPlan }) {
+    const [file, setFile] = useState(null);
     const [category, setCategory] = useState('reading');
     const [level, setLevel] = useState('N4');
     const [topic, setTopic] = useState('');
@@ -28,8 +29,8 @@ function MaterialGenerator() {
     const [loading, setLoading] = useState(false);
     const [imageLoading, setImageLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [fileName, setFileName] = useState('');
-
+    // userPlan is now a prop from App.jsx
+    const [fileName, setFileName] = useState(''); // Added fileName state
     const fileInputRef = useRef(null);
 
     // Initial Load
@@ -69,8 +70,10 @@ function MaterialGenerator() {
         setUploading(true);
 
         try {
+            const token = localStorage.getItem('token');
             const res = await fetch(API_BASE_URL + '/api/materials/upload-reference', {
                 method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             });
 
@@ -91,16 +94,28 @@ function MaterialGenerator() {
     };
 
     const handleGenerate = async () => {
-
-        if (!topic) return alert("トピックを入力してください");
+        if (userPlan?.toLowerCase() === 'standard') {
+            if (window.confirm("🔒 Standardプランでは教材作成機能は利用できません。プロプランにアップグレードしますか？")) {
+                window.location.href = "http://localhost:8501";
+            }
+            return;
+        }
+        if (!topic) {
+            alert("トピックを入力してください");
+            return;
+        }
         setLoading(true);
         setGeneratedContent('');
         setGeneratedImage('');
 
         try {
+            const token = localStorage.getItem('token');
             const res = await fetch(API_BASE_URL + '/api/materials/generate', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ category, level, topic, model, reference_text: referenceText })
             });
             const data = await res.json();
@@ -118,12 +133,22 @@ function MaterialGenerator() {
     };
 
     const handleImageGenerate = async () => {
+        if (userPlan?.toLowerCase() === 'standard') {
+            if (window.confirm("🔒 Standardプランでは画像生成機能は利用できません。プロプランにアップグレードしますか？")) {
+                window.location.href = "http://localhost:8501";
+            }
+            return;
+        }
         if (!topic) return;
         setImageLoading(true);
         try {
+            const token = localStorage.getItem('token');
             const res = await fetch(API_BASE_URL + '/api/materials/image', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify({ prompt: topic, model })
             });
             const data = await res.json();
@@ -240,10 +265,15 @@ function MaterialGenerator() {
             </div>
 
             <div className="actions" style={{ justifyContent: 'center' }}>
-                <button className="primary-btn" onClick={handleGenerate} disabled={loading} style={{ width: '200px' }}>
+                <button
+                    className={`primary-btn ${userPlan?.toLowerCase() === 'standard' ? 'locked' : ''}`}
+                    onClick={handleGenerate}
+                    disabled={loading || !topic}
+                    style={{ width: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: userPlan?.toLowerCase() === 'standard' ? 0.6 : 1 }}
+                >
                     {loading ?
-                        <span><RefreshCw className="spinner" style={{ width: 20, height: 20, display: 'inline', marginRight: 5 }} /> 生成中...</span>
-                        : 'Generate'}
+                        <span><RefreshCw className="spinner" style={{ width: 20, height: 20, display: 'inline' }} /> 生成中...</span>
+                        : (userPlan?.toLowerCase() === 'standard' ? <><Lock size={18} /> 生成 (Locked)</> : '教材を生成する (Generate)')}
                 </button>
             </div>
 

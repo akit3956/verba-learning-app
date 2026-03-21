@@ -7,6 +7,15 @@
 // Before, window.location.hostname could resolve to 'localhost' on the phone,
 // causing the models fetch to fail and fallback to 'gemma2'.
 
-const API_BASE_URL = 'https://verba-learning-app.onrender.com';
+const hostname = window.location.hostname;
+const isLocal = hostname === 'localhost' || 
+                hostname === '127.0.0.1' || 
+                hostname.startsWith('192.168.') || 
+                hostname.startsWith('10.') || 
+                hostname.endsWith('.local');
+
+const API_BASE_URL = isLocal 
+    ? `http://${hostname}:8000` 
+    : 'https://verba-learning-app.onrender.com';
 
 export default API_BASE_URL;

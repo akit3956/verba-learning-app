@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import httpx
@@ -13,9 +13,19 @@ from openai import AsyncOpenAI
 import google.generativeai as genai
 from prompts import get_quiz_prompt, get_aki_style_prompt
 
+def clean_json_string(s: str) -> str:
+    """Robustly clean JSON string from LLM responses, removing markdown blocks."""
+    if not s:
+        return ""
+    # Remove ```json ... ``` or ``` ... ```
+    s = re.sub(r'^```(?:json)?\s*', '', s, flags=re.MULTILINE)
+    s = re.sub(r'\s*```$', '', s, flags=re.MULTILINE)
+    return s.strip()
+
 # New Modules (Trigger Reload)
 from database import init_db
 from routers import wallet, materials, auth
+from routers.auth import get_current_user
 import config
 from pdf_utils import get_random_page_image
 from pdf_context import load_context_for_level
@@ -82,6 +92,13 @@ async def update_config_endpoint(update: ConfigUpdate):
     config.update_config("model", update.model)
     config.update_config("openai_api_key", update.openai_api_key)
     config.update_config("gemini_api_key", update.gemini_api_key)
+    
+    # Re-initialize OpenAI client if key is provided
+    global openai_client
+    if update.openai_api_key:
+        print(f"Re-initializing OpenAI client with new key: {update.openai_api_key[:10]}...")
+        openai_client = AsyncOpenAI(api_key=update.openai_api_key)
+    
     return {"message": "Config updated", "config": config.get_config()}
 
 @app.get("/models")
@@ -93,8 +110,10 @@ async def get_models():
     models.append({"name": "gpt-4-turbo", "type": "cloud", "size": "OpenAI"})
     models.append({"name": "gpt-3.5-turbo", "type": "cloud", "size": "OpenAI"})
     models.append({"name": "gemini-2.5-flash", "type": "cloud", "size": "Google"})
+    models.append({"name": "gemini-2.5-pro", "type": "cloud", "size": "Google"})
     models.append({"name": "gemini-2.0-flash", "type": "cloud", "size": "Google"})
     models.append({"name": "gemini-flash-latest", "type": "cloud", "size": "Google"})
+    models.append({"name": "gemini-pro-latest", "type": "cloud", "size": "Google"})
 
     
     # Add Ollama models
@@ -117,7 +136,10 @@ async def get_models():
 import rag_utils # Import the RAG module
 
 @app.post("/generate")
-async def generate_quiz(req: GenerateRequest):
+async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_current_user)):
+    # Block advanced features for standard users
+    if req.mode in ["mock_test", "all_items"] and current_user.get("plan_type", "standard") == "standard":
+        raise HTTPException(status_code=403, detail="Standardプランではこの機能は利用できません。Proプラン以上へアップグレードしてください。")
     # Determine count based on mode
     count = 1
     if req.mode == "small_test":
@@ -157,19 +179,27 @@ async def generate_quiz(req: GenerateRequest):
 
                 if is_openai:
                     if not openai_client:
+                        print("Error: openai_client is None")
                         raise HTTPException(status_code=503, detail="OpenAI API key not configured")
                     
-                    response = await openai_client.chat.completions.create(
-                        model=req.model,
-                        messages=[
-                            {"role": "system", "content": "You are a specific Japanese language quiz generator."},
-                            {"role": "user", "content": prompt}
-                        ],
-                        temperature=0.2, # Lower temperature for precision as requested
-                        response_format={"type": "json_object"} # Enforce JSON
-                    )
-                    content = response.choices[0].message.content
-                    result_json = json.loads(content)
+                    print(f"Sending request to OpenAI ({req.model})...")
+                    try:
+                        response = await openai_client.chat.completions.create(
+                            model=req.model,
+                            messages=[
+                                {"role": "system", "content": "You are a specific Japanese language quiz generator. Output must be valid JSON."},
+                                {"role": "user", "content": prompt}
+                            ],
+                            temperature=0.7,
+                            response_format={"type": "json_object"}
+                        )
+                        content = response.choices[0].message.content
+                        print(f"=== OpenAI Response ===\n{content[:100]}...\n===")
+                        cleaned_content = clean_json_string(content)
+                        result_json = json.loads(cleaned_content)
+                    except Exception as e:
+                        print(f"OpenAI Error: {e}")
+                        raise HTTPException(status_code=500, detail=f"OpenAI API Error: {e}")
                 elif is_gemini:
                     gemini_key = os.getenv("GEMINI_API_KEY") or config.get_config().get("gemini_api_key")
                     if not gemini_key:
@@ -185,8 +215,9 @@ async def generate_quiz(req: GenerateRequest):
                             generation_config={"response_mime_type": "application/json", "temperature": 0.7}
                         )
                         content = response.text
-                        print(f"=== Gemini Response ===\n{content}\n===")
-                        result_json = json.loads(content)
+                        print(f"=== Gemini Response ===\n{content[:100]}...\n===")
+                        cleaned_content = clean_json_string(content)
+                        result_json = json.loads(cleaned_content)
                     except Exception as e:
                         print(f"Gemini Error: {e}")
                         raise HTTPException(status_code=500, detail=f"Gemini API Error: {e}")
@@ -203,7 +234,8 @@ async def generate_quiz(req: GenerateRequest):
                         resp = await client.post(OLLAMA_URL, json=payload, timeout=60.0)
                         resp.raise_for_status()
                         content = resp.json().get("response", "")
-                        result_json = json.loads(content)
+                        cleaned_content = clean_json_string(content)
+                        result_json = json.loads(cleaned_content)
                 
                 # --- Normalize Data ---
                 # Check if wrapped in list
@@ -245,12 +277,22 @@ async def generate_quiz(req: GenerateRequest):
             if not openai_client:
                  raise HTTPException(status_code=503, detail="OpenAI API key not configured")
             
-            response = await openai_client.chat.completions.create(
-                model=req.model,
-                messages=[{"role": "system", "content": "You are a Japanese teacher."}, {"role": "user", "content": prompt}],
-                temperature=0.7
-            )
-            raw_content = response.choices[0].message.content
+            print(f"Sending request to OpenAI ({req.model}) for Reading...")
+            try:
+                response = await openai_client.chat.completions.create(
+                    model=req.model,
+                    messages=[
+                        {"role": "system", "content": "You are a Japanese teacher. Output must be valid JSON."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.7,
+                    response_format={"type": "json_object"}
+                )
+                raw_content = response.choices[0].message.content
+                print(f"=== OpenAI Reading Response ===\n{raw_content[:100]}...\n===")
+            except Exception as e:
+                print(f"OpenAI Reading Error: {e}")
+                raise HTTPException(status_code=500, detail=f"OpenAI API Error: {e}")
         elif req.model.startswith("gemini"):
             gemini_key = os.getenv("GEMINI_API_KEY") or config.get_config().get("gemini_api_key")
             if not gemini_key:
@@ -260,18 +302,14 @@ async def generate_quiz(req: GenerateRequest):
                 genai.configure(api_key=gemini_key)
                 model = genai.GenerativeModel(req.model)
                 print(f"Sending request to Gemini ({req.model}) for Reading...")
-                # Reading prompt might not be strict JSON, but let's try to enforce it if possible, 
-                # or just get text and clean it like OpenAI/Ollama.
-                # Since get_quiz_prompt asks for JSON, we use JSON mode.
                 response = model.generate_content(
                     prompt,
                     generation_config={"response_mime_type": "application/json", "temperature": 0.3}
                 )
                 raw_content = response.text
-                print(f"=== Gemini Reading Response ===\n{raw_content}\n===")
+                print(f"=== Gemini Reading Response ===\n{raw_content[:100]}...\n===")
             except Exception as e:
                 print(f"Gemini Reading Error: {e}")
-                # Check for safety blocking if available in exception or response object (hard to get here if exception raised)
                 raise HTTPException(status_code=500, detail=f"Gemini API Error: {e}")
         else:
             payload = {"model": req.model, "prompt": prompt, "format": "json", "stream": False}
@@ -281,7 +319,7 @@ async def generate_quiz(req: GenerateRequest):
         
         # Parse JSON
         try:
-            cleaned = re.sub(r'```json\s*|\s*```', '', raw_content).strip()
+            cleaned = clean_json_string(raw_content)
             data = json.loads(cleaned)
             if isinstance(data, dict):
                 keys = list(data.keys())
@@ -306,7 +344,11 @@ async def generate_quiz(req: GenerateRequest):
     return questions_data
 
 @app.post("/api/mock-test")
-async def generate_mock_test(req: MockTestRequest):
+async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(get_current_user)):
+    # Block feature for standard users
+    if current_user.get("plan_type", "standard") == "standard":
+        raise HTTPException(status_code=403, detail="Standardプランではこの機能は利用できません。Proプラン以上へアップグレードしてください。")
+        
     # 1. Get Image
     data, error = get_random_page_image(req.level)
     if error:

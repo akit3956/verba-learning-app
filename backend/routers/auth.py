@@ -29,6 +29,7 @@ class UserCreate(BaseModel):
     username: str
     password: str
     is_founder: bool = False
+    plan_type: str = "standard"
 
 class Token(BaseModel):
     access_token: str
@@ -38,6 +39,7 @@ class UserResponse(BaseModel):
     id: str
     username: str
     vrb_balance: int
+    plan_type: str = "standard"
 
 class ForgotPasswordRequest(BaseModel):
     email: str
@@ -113,11 +115,12 @@ async def register(user: UserCreate):
         
     user_id = str(uuid.uuid4())
     hashed_password = get_password_hash(user.password)
-    initial_bonus = 10000 if user.is_founder else 0
+    initial_bonus = 10000 if user.is_founder or user.plan_type == 'founder' else 0
+    plan_type = "founder" if user.is_founder else user.plan_type
     
     try:
-        c.execute("INSERT INTO users (id, email, username, password_hash, vrb_balance) VALUES (%s, %s, %s, %s, %s)",
-                  (user_id, user.email, user.username, hashed_password, initial_bonus))
+        c.execute("INSERT INTO users (id, email, username, password_hash, vrb_balance, plan_type) VALUES (%s, %s, %s, %s, %s, %s)",
+                  (user_id, user.email, user.username, hashed_password, initial_bonus, plan_type))
         conn.commit()
     except Exception as e:
         conn.close()
@@ -159,7 +162,8 @@ async def read_users_me(current_user: dict = Depends(get_current_user)):
     return UserResponse(
         id=current_user["id"],
         username=current_user["username"],
-        vrb_balance=current_user["vrb_balance"]
+        vrb_balance=current_user["vrb_balance"],
+        plan_type=current_user.get("plan_type", "standard")
     )
 
 @router.post("/forgot-password")
