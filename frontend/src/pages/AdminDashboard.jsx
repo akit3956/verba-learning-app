@@ -1,11 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Users, LayoutDashboard, RefreshCcw, ShieldAlert } from 'lucide-react';
+import { Users, LayoutDashboard, RefreshCcw, ShieldAlert, CheckCircle2, XCircle } from 'lucide-react';
 import API_BASE_URL from '../api_config';
 
 const AdminDashboard = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    
+    const [config, setConfig] = useState({
+        model: '',
+        openai_api_key: '',
+        gemini_api_key: ''
+    });
+    const [configLoading, setConfigLoading] = useState(false);
+    const [configSuccess, setConfigSuccess] = useState(false);
+    const [testResults, setTestResults] = useState(null);
+    const [testing, setTesting] = useState(false);
 
     const fetchUsers = async () => {
         setLoading(true);
@@ -13,15 +23,11 @@ const AdminDashboard = () => {
         try {
             const token = localStorage.getItem('token');
             const response = await fetch(`${API_BASE_URL}/auth/users`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+                headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (!response.ok) {
-                if (response.status === 403) {
-                    throw new Error("You do not have permission to view the Admin Dashboard.");
-                }
+                if (response.status === 403) throw new Error("Access Denied");
                 throw new Error("Failed to fetch user list.");
             }
 
@@ -33,14 +39,6 @@ const AdminDashboard = () => {
             setLoading(false);
         }
     };
-
-    const [config, setConfig] = useState({
-        model: '',
-        openai_api_key: '',
-        gemini_api_key: ''
-    });
-    const [configLoading, setConfigLoading] = useState(false);
-    const [configSuccess, setConfigSuccess] = useState(false);
 
     const fetchConfig = async () => {
         try {
@@ -79,13 +77,31 @@ const AdminDashboard = () => {
             if (response.ok) {
                 setConfigSuccess(true);
                 setTimeout(() => setConfigSuccess(false), 3000);
+                fetchConfig(); // Refresh masked keys
             } else {
                 alert("Failed to update configuration");
             }
         } catch (err) {
-            alert("Error updating configuration: " + err.message);
+            alert("Error: " + err.message);
         } finally {
             setConfigLoading(false);
+        }
+    };
+
+    const testApi = async () => {
+        setTesting(true);
+        setTestResults(null);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/config/test`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await response.json();
+            setTestResults(data);
+        } catch (err) {
+            setTestResults({ error: err.message });
+        } finally {
+            setTesting(false);
         }
     };
 
@@ -155,11 +171,31 @@ const AdminDashboard = () => {
                                 placeholder="AIza..."
                             />
                         </div>
-                        <button type="submit" style={styles.saveBtn} disabled={configLoading}>
-                            {configLoading ? 'Saving...' : 'Update Keys'}
-                        </button>
-                        {configSuccess && <span style={styles.successMsg}>✓ Updated Successfully</span>}
+                        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                            <button type="submit" style={styles.saveBtn} disabled={configLoading}>
+                                {configLoading ? 'Saving...' : 'Update Keys'}
+                            </button>
+                            <button type="button" onClick={testApi} style={styles.testBtn} disabled={testing}>
+                                {testing ? 'Testing...' : 'Test Connection'}
+                            </button>
+                            {configSuccess && <span style={styles.successMsg}>✓ Saved</span>}
+                        </div>
                     </form>
+
+                    {testResults && (
+                        <div style={styles.testPanel}>
+                            <h4 style={{ margin: '0 0 10px 0', fontSize: '14px' }}>Connection Test Results:</h4>
+                            <div style={styles.testRow}>
+                                <span>OpenAI:</span>
+                                <b>{testResults.openai}</b>
+                            </div>
+                            <div style={styles.testRow}>
+                                <span>Gemini:</span>
+                                <b>{testResults.gemini}</b>
+                            </div>
+                            {testResults.error && <p style={{ color: '#e53e3e', fontSize: '12px', marginTop: '5px' }}>{testResults.error}</p>}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -206,173 +242,33 @@ const AdminDashboard = () => {
 };
 
 const styles = {
-    container: {
-        maxWidth: '1000px',
-        margin: '0 auto',
-        padding: '20px',
-        fontFamily: 'Inter, sans-serif',
-    },
-    errorContainer: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '60px 20px',
-        background: '#fff5f5',
-        border: '1px solid #fed7d7',
-        borderRadius: '12px',
-        marginTop: '40px',
-        textAlign: 'center',
-    },
-    header: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '30px',
-    },
-    titleWrapper: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-    },
-    title: {
-        fontSize: '28px',
-        fontWeight: 'bold',
-        color: '#1a202c',
-        margin: 0,
-    },
-    refreshBtn: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '8px 16px',
-        background: '#edf2f7',
-        border: '1px solid #e2e8f0',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontSize: '14px',
-        fontWeight: '500',
-        color: '#4a5568',
-        transition: 'all 0.2s',
-    },
-    grid: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '30px',
-        marginBottom: '30px',
-    },
-    statsCard: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '16px',
-        background: 'white',
-        padding: '24px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-        border: '1px solid #edf2f7',
-    },
-    configCard: {
-        background: 'white',
-        padding: '24px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-        border: '1px solid #edf2f7',
-    },
-    formGroup: {
-        marginBottom: '16px',
-    },
-    label: {
-        display: 'block',
-        fontSize: '14px',
-        fontWeight: '500',
-        color: '#4a5568',
-        marginBottom: '6px',
-    },
-    input: {
-        width: '100%',
-        padding: '10px 12px',
-        borderRadius: '6px',
-        border: '1px solid #e2e8f0',
-        fontSize: '14px',
-        color: '#2d3748',
-        boxSizing: 'border-box',
-    },
-    saveBtn: {
-        background: '#3182ce',
-        color: 'white',
-        border: 'none',
-        padding: '10px 20px',
-        borderRadius: '8px',
-        fontWeight: 'bold',
-        cursor: 'pointer',
-        transition: 'background 0.2s',
-    },
-    successMsg: {
-        color: '#38a169',
-        fontSize: '14px',
-        marginLeft: '12px',
-        fontWeight: '500',
-    },
-    statIcon: {
-        background: '#ebf8ff',
-        padding: '16px',
-        borderRadius: '12px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    statLabel: {
-        margin: '0 0 4px 0',
-        fontSize: '14px',
-        color: '#718096',
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-    },
-    statValue: {
-        margin: 0,
-        fontSize: '32px',
-        fontWeight: 'bold',
-        color: '#2b6cb0',
-    },
-    tableCard: {
-        background: 'white',
-        borderRadius: '12px',
-        boxShadow: '0 4px 6px rgba(0,0,0,0.05)',
-        padding: '24px',
-        border: '1px solid #edf2f7',
-    },
-    tableWrapper: {
-        overflowX: 'auto',
-    },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse',
-        textAlign: 'left',
-    },
-    th: {
-        padding: '12px 16px',
-        borderBottom: '2px solid #edf2f7',
-        color: '#4a5568',
-        fontWeight: '600',
-        fontSize: '14px',
-    },
-    tr: {
-        borderBottom: '1px solid #edf2f7',
-    },
-    td: {
-        padding: '16px',
-        color: '#2d3748',
-        fontSize: '14px',
-    },
-    badge: {
-        background: '#feebc8',
-        color: '#c05621',
-        padding: '4px 8px',
-        borderRadius: '9999px',
-        fontSize: '12px',
-        fontWeight: 'bold',
-        display: 'inline-block',
-    }
+    container: { maxWidth: '1000px', margin: '0 auto', padding: '20px', fontFamily: 'Inter, sans-serif' },
+    errorContainer: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', background: '#fff5f5', border: '1px solid #fed7d7', borderRadius: '12px', marginTop: '40px', textAlign: 'center' },
+    header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' },
+    titleWrapper: { display: 'flex', alignItems: 'center', gap: '12px' },
+    title: { fontSize: '28px', fontWeight: 'bold', color: '#1a202c', margin: 0 },
+    refreshBtn: { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#edf2f7', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: '500', color: '#4a5568' },
+    grid: { display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '30px', marginBottom: '30px' },
+    statsCard: { display: 'flex', alignItems: 'center', gap: '16px', background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #edf2f7' },
+    configCard: { background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', border: '1px solid #edf2f7' },
+    formGroup: { marginBottom: '16px' },
+    label: { display: 'block', fontSize: '14px', fontWeight: '500', color: '#4a5568', marginBottom: '6px' },
+    input: { width: '100%', padding: '10px 12px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '14px', color: '#2d3748', boxSizing: 'border-box' },
+    saveBtn: { background: '#3182ce', color: 'white', border: 'none', padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' },
+    testBtn: { background: '#edf2f7', color: '#4a5568', border: '1px solid #e2e8f0', padding: '10px 20px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' },
+    successMsg: { color: '#38a169', fontSize: '14px', fontWeight: '500' },
+    testPanel: { marginTop: '20px', padding: '15px', background: '#f7fafc', borderRadius: '8px', border: '1px solid #e2e8f0' },
+    testRow: { display: 'flex', justifyContent: 'space-between', fontSize: '13px', marginBottom: '5px' },
+    statIcon: { background: '#ebf8ff', padding: '16px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+    statLabel: { margin: '0 0 4px 0', fontSize: '14px', color: '#718096', textTransform: 'uppercase' },
+    statValue: { margin: 0, fontSize: '32px', fontWeight: 'bold', color: '#2b6cb0' },
+    tableCard: { background: 'white', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)', padding: '24px', border: '1px solid #edf2f7' },
+    tableWrapper: { overflowX: 'auto' },
+    table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left' },
+    th: { padding: '12px 16px', borderBottom: '2px solid #edf2f7', color: '#4a5568', fontWeight: '600', fontSize: '14px' },
+    tr: { borderBottom: '1px solid #edf2f7' },
+    td: { padding: '16px', color: '#2d3748', fontSize: '14px' },
+    badge: { background: '#feebc8', color: '#c05621', padding: '4px 8px', borderRadius: '9999px', fontSize: '12px', fontWeight: 'bold', display: 'inline-block' }
 };
 
 export default AdminDashboard;

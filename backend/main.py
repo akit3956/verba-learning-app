@@ -115,6 +115,36 @@ async def update_config_endpoint(update: ConfigUpdate):
     
     return {"message": "Config updated", "config": await get_config_endpoint()}
 
+@app.get("/config/test")
+async def test_api_config(current_user: dict = Depends(get_current_user)):
+    if current_user.get("username") != "aki":
+        raise HTTPException(status_code=403, detail="Admin only")
+    
+    results = {"openai": "Not Configured", "gemini": "Not Configured"}
+    
+    # Test OpenAI
+    if openai_client:
+        try:
+            # Simple call to list models to verify key
+            await openai_client.models.list()
+            results["openai"] = "✅ Success"
+        except Exception as e:
+            results["openai"] = f"❌ Error: {str(e)}"
+    
+    # Test Gemini
+    gemini_key = config.get_config().get("gemini_api_key")
+    if gemini_key:
+        try:
+            import google.generativeai as genai
+            genai.configure(api_key=gemini_key)
+            # Simple call to list models
+            genai.list_models()
+            results["gemini"] = "✅ Success"
+        except Exception as e:
+            results["gemini"] = f"❌ Error: {str(e)}"
+            
+    return results
+
 @app.get("/models")
 async def get_models():
     models = []
