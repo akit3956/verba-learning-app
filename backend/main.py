@@ -85,21 +85,35 @@ openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
 @app.get("/config")
 async def get_config_endpoint():
-    return config.get_config()
+    raw_config = config.get_config()
+    # Mask keys for frontend display
+    masked_config = raw_config.copy()
+    for key in ["openai_api_key", "gemini_api_key"]:
+        val = raw_config.get(key, "")
+        if val and len(val) > 12:
+            masked_config[key] = f"{val[:8]}...{val[-4:]}"
+        elif val:
+            masked_config[key] = "****"
+    return masked_config
 
 @app.post("/config")
 async def update_config_endpoint(update: ConfigUpdate):
-    config.update_config("model", update.model)
-    config.update_config("openai_api_key", update.openai_api_key)
-    config.update_config("gemini_api_key", update.gemini_api_key)
-    
-    # Re-initialize OpenAI client if key is provided
-    global openai_client
-    if update.openai_api_key:
+    # Only update if the key provided is NOT a masked version
+    if update.openai_api_key and "*" not in update.openai_api_key:
+        config.update_config("openai_api_key", update.openai_api_key)
+        # Re-initialize OpenAI client
+        global openai_client
         print(f"Re-initializing OpenAI client with new key: {update.openai_api_key[:10]}...")
         openai_client = AsyncOpenAI(api_key=update.openai_api_key)
+
+    if update.gemini_api_key and "*" not in update.gemini_api_key:
+        config.update_config("gemini_api_key", update.gemini_api_key)
+        genai.configure(api_key=update.gemini_api_key)
+
+    if update.model:
+        config.update_config("model", update.model)
     
-    return {"message": "Config updated", "config": config.get_config()}
+    return {"message": "Config updated", "config": await get_config_endpoint()}
 
 @app.get("/models")
 async def get_models():
