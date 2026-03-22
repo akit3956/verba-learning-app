@@ -37,8 +37,13 @@ async def generate_material(req: MaterialRequest, current_user: dict = Depends(g
         raise HTTPException(status_code=403, detail="Standardプランではティーチャーツールは利用できません。Proプランへアップグレードしてください。")
     prompt = get_generation_prompt(req.category, req.level, req.topic, req.reference_text)
     
+    # Model validation
+    target_model = req.model
+    if target_model not in ["gpt-4o", "gemini-2.0-flash"]:
+        target_model = "gpt-4o"
+
     # OpenAI Logic
-    if req.model.startswith("gpt-"):
+    if target_model.startswith("gpt-"):
         client = get_openai_client()
         if not client:
              raise HTTPException(status_code=503, detail="OpenAI API key not configured")
@@ -50,7 +55,7 @@ async def generate_material(req: MaterialRequest, current_user: dict = Depends(g
                     {"role": "system", "content": "あなたは日本語教師です。"},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.3
+                temperature=0.2
             )
             return {"result": response.choices[0].message.content}
         except Exception as e:
@@ -67,14 +72,14 @@ async def generate_material(req: MaterialRequest, current_user: dict = Depends(g
         
         try:
             genai.configure(api_key=gemini_key)
-            model = genai.GenerativeModel(req.model)
+            model = genai.GenerativeModel(target_model)
             
             # Use 'response_mime_type' only if we wanted JSON, but here we generally want text.
             # However, if the prompt asks for JSON (like Quiz), we might get JSON text.
             # We'll just return whatever Gemini gives as string.
             response = model.generate_content(
                 prompt,
-                generation_config={"temperature": 0.3} 
+                generation_config={"temperature": 0.2} 
             )
             # Check for safety blocking
             if response.prompt_feedback.block_reason:
@@ -90,25 +95,9 @@ async def generate_material(req: MaterialRequest, current_user: dict = Depends(g
             print(f"Gemini Material Error: {e}")
             raise HTTPException(status_code=500, detail=f"Gemini API Error: {e}")
 
-    # Ollama Logic
+    # Model Restriction strictly enforced above
     else:
-        payload = {
-            "model": req.model,
-            "prompt": prompt,
-            "stream": False
-        }
-        
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(OLLAMA_URL, json=payload, timeout=90.0)
-                response.raise_for_status()
-                data = response.json()
-                return {"result": data.get("response", "")}
-        except httpx.RequestError as e:
-            print(f"Ollama connection error: {e}")
-            raise HTTPException(status_code=503, detail="Could not connect to Ollama. Is it running?")
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Ollama error: {str(e)}")
+        raise HTTPException(status_code=400, detail="Unsupported model")
 
 
 @router.post("/image")

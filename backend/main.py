@@ -70,7 +70,7 @@ class GenerateRequest(BaseModel):
     level: str     # "N5", "N4", "N3", "N2", "N1"
     topic: str = ""
     mode: str = "single" # "single", "small_test", "mock_test"
-    model: str = "gemma2"
+    model: str = "gpt-4o"
     include_image: bool = False 
 
 class MockTestRequest(BaseModel):
@@ -78,8 +78,7 @@ class MockTestRequest(BaseModel):
     model: str = "gpt-4o"
     api_key: str = ""
 
-OLLAMA_URL = "http://localhost:11434/api/generate"
-OLLAMA_TAGS_URL = "http://localhost:11434/api/tags"
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
 
@@ -147,35 +146,12 @@ async def test_api_config(current_user: dict = Depends(get_current_user)):
 
 @app.get("/models")
 async def get_models():
-    models = []
-    
-    # Always add OpenAI models as options (Validation happens at generation time)
-    models.append({"name": "gpt-4o", "type": "cloud", "size": "OpenAI"})
-    models.append({"name": "gpt-4-turbo", "type": "cloud", "size": "OpenAI"})
-    models.append({"name": "gpt-3.5-turbo", "type": "cloud", "size": "OpenAI"})
-    models.append({"name": "gemini-2.5-flash", "type": "cloud", "size": "Google"})
-    models.append({"name": "gemini-2.5-pro", "type": "cloud", "size": "Google"})
-    models.append({"name": "gemini-2.0-flash", "type": "cloud", "size": "Google"})
-    models.append({"name": "gemini-flash-latest", "type": "cloud", "size": "Google"})
-    models.append({"name": "gemini-pro-latest", "type": "cloud", "size": "Google"})
-
-    
-    # Add Ollama models
-    try:
-        async with httpx.AsyncClient() as client:
-            resp = await client.get(OLLAMA_TAGS_URL, timeout=2.0)
-            if resp.status_code == 200:
-                ollama_models = resp.json().get("models", [])
-                for m in ollama_models:
-                    models.append({
-                        "name": m.get("name", ""),
-                        "type": "local",
-                        "size": m.get("size", "Unknown")
-                    })
-    except Exception as e:
-        print(f"Ollama error: {e}")
-    
+    models = [
+        {"name": "gpt-4o", "type": "cloud", "size": "OpenAI (High Accuracy)"},
+        {"name": "gemini-2.0-flash", "type": "cloud", "size": "Google (Fast & Accurate)"}
+    ]
     return {"models": models}
+models}
 
 import rag_utils # Import the RAG module
 
@@ -216,9 +192,13 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                 # Use Jay's Aki Style Prompt
                 prompt = get_aki_style_prompt(req.level, req.topic, req.category, loop_index=i, total_count=count, reference_text=reference_text)
                 
-                # --- LLM Call ---
-                is_openai = req.model.startswith("gpt-")
-                is_gemini = req.model.startswith("gemini")
+                # Model check (Constraint to 2 models)
+                target_model = req.model
+                if target_model not in ["gpt-4o", "gemini-2.0-flash"]:
+                    target_model = "gpt-4o" # Strict fallback
+
+                is_openai = target_model.startswith("gpt-")
+                is_gemini = target_model.startswith("gemini")
                 result_json = {}
 
                 if is_openai:
@@ -229,12 +209,12 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                     print(f"Sending request to OpenAI ({req.model})...")
                     try:
                         response = await openai_client.chat.completions.create(
-                            model=req.model,
+                            model=target_model,
                             messages=[
                                 {"role": "system", "content": "You are a specific Japanese language quiz generator. Output must be valid JSON."},
                                 {"role": "user", "content": prompt}
                             ],
-                            temperature=0.3,
+                            temperature=0.2,
                             response_format={"type": "json_object"}
                         )
                         content = response.choices[0].message.content
@@ -251,12 +231,12 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                     
                     try:
                         genai.configure(api_key=gemini_key)
-                        model = genai.GenerativeModel(req.model)
+                        model = genai.GenerativeModel(target_model)
                         print(f"Sending request to Gemini ({req.model})...")
                         # Gemini 1.5 supports JSON response schema via generation_config
                         response = model.generate_content(
                             prompt,
-                            generation_config={"response_mime_type": "application/json", "temperature": 0.3}
+                            generation_config={"response_mime_type": "application/json", "temperature": 0.2}
                         )
                         content = response.text
                         print(f"=== Gemini Response ===\n{content[:100]}...\n===")
@@ -267,19 +247,8 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                         raise HTTPException(status_code=500, detail=f"Gemini API Error: {e}")
 
                 else:
-                    # Ollama
-                    payload = {
-                        "model": req.model,
-                        "prompt": prompt,
-                        "stream": False,
-                        "format": "json"
-                    }
-                    async with httpx.AsyncClient() as client:
-                        resp = await client.post(OLLAMA_URL, json=payload, timeout=60.0)
-                        resp.raise_for_status()
-                        content = resp.json().get("response", "")
-                        cleaned_content = clean_json_string(content)
-                        result_json = json.loads(cleaned_content)
+                    # Invalid or local model (already handled by target_model set to gpt-4o)
+                    raise HTTPException(status_code=400, detail="Unsupported model")
                 
                 # --- Normalize Data ---
                 # Check if wrapped in list
@@ -316,7 +285,12 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
         # For compatibility, let's just use get_quiz_prompt which handles Reading
         prompt = get_quiz_prompt(req.category, req.level, count, reference_text, None, req.include_image)
         
-        is_openai = req.model.startswith("gpt-")
+        # Model check (Reading)
+        target_model = req.model
+        if target_model not in ["gpt-4o", "gemini-2.0-flash"]:
+            target_model = "gpt-4o"
+
+        is_openai = target_model.startswith("gpt-")
         if is_openai:
             if not openai_client:
                  raise HTTPException(status_code=503, detail="OpenAI API key not configured")
@@ -324,12 +298,12 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
             print(f"Sending request to OpenAI ({req.model}) for Reading...")
             try:
                 response = await openai_client.chat.completions.create(
-                    model=req.model,
+                    model=target_model,
                     messages=[
                         {"role": "system", "content": "You are a Japanese teacher. Output must be valid JSON."},
                         {"role": "user", "content": prompt}
                     ],
-                    temperature=0.3,
+                    temperature=0.2,
                     response_format={"type": "json_object"}
                 )
                 raw_content = response.choices[0].message.content
@@ -344,11 +318,11 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
             
             try:
                 genai.configure(api_key=gemini_key)
-                model = genai.GenerativeModel(req.model)
+                model = genai.GenerativeModel(target_model)
                 print(f"Sending request to Gemini ({req.model}) for Reading...")
                 response = model.generate_content(
                     prompt,
-                    generation_config={"response_mime_type": "application/json", "temperature": 0.3}
+                    generation_config={"response_mime_type": "application/json", "temperature": 0.2}
                 )
                 raw_content = response.text
                 print(f"=== Gemini Reading Response ===\n{raw_content[:100]}...\n===")
@@ -356,10 +330,7 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                 print(f"Gemini Reading Error: {e}")
                 raise HTTPException(status_code=500, detail=f"Gemini API Error: {e}")
         else:
-            payload = {"model": req.model, "prompt": prompt, "format": "json", "stream": False}
-            async with httpx.AsyncClient() as client:
-                resp = await client.post(OLLAMA_URL, json=payload, timeout=120.0)
-                raw_content = resp.json().get("response", "")
+            raise HTTPException(status_code=400, detail="Unsupported model")
         
         # Parse JSON
         try:
@@ -423,8 +394,13 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
     If no questions are found (e.g. cover page), return an empty list [].
     """
     
+    # Model validation
+    target_model = req.model
+    if target_model not in ["gpt-4o", "gemini-2.0-flash"]:
+        target_model = "gpt-4o"
+
     try:
-        if req.model.startswith("gemini"):
+        if target_model.startswith("gemini"):
             gemini_key = os.getenv("GEMINI_API_KEY") or config.get_config().get("gemini_api_key")
             if not gemini_key:
                  raise HTTPException(status_code=401, detail="Gemini API Key not configured")

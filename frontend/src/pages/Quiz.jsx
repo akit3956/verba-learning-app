@@ -9,7 +9,7 @@ function Quiz({ userPlan }) {
     const [level, setLevel] = useState('N4');
     const [category, setCategory] = useState('grammar');
     const [mode, setMode] = useState('single');
-    const [model, setModel] = useState('gemini-flash-latest');
+    const [model, setModel] = useState('gpt-4o');
     const [availableModels, setAvailableModels] = useState([]);
     const [includeImage, setIncludeImage] = useState(false); // New: Visual Hints
 
@@ -36,14 +36,12 @@ function Quiz({ userPlan }) {
                 console.log("Models fetched:", data);
                 setAvailableModels(data.models || []);
 
-                // Prefer gemini-flash-latest if available
-                const hasGemini = data.models?.some(m => m.name === 'gemini-flash-latest');
-                if (hasGemini) {
-                    setModel('gemini-flash-latest');
+                // Prefer gpt-4o if available
+                const hasGPT4o = data.models?.some(m => m.name === 'gpt-4o');
+                if (hasGPT4o) {
+                    setModel('gpt-4o');
                 } else if (data.models && data.models.length > 0) {
                     setModel(data.models[0].name);
-                } else {
-                    setAvailableModels([{ name: "gemma2", type: "local", size: "default" }]);
                 }
             } catch (err) {
                 console.error('Failed to fetch data:', err);

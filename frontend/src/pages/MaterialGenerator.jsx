@@ -17,7 +17,7 @@ function MaterialGenerator({ userPlan }) {
     const [referenceText, setReferenceText] = useState('');
 
     // Config
-    const [model, setModel] = useState('gemini-flash-latest');
+    const [model, setModel] = useState('gpt-4o');
     const [availableModels, setAvailableModels] = useState([]);
     const [showSettings, setShowSettings] = useState(false);
 
@@ -46,10 +46,10 @@ function MaterialGenerator({ userPlan }) {
             setAvailableModels(modelData.models || []);
 
             // Set default model if configured, else first available
-            // Prefer gemini-flash-latest if available
-            const hasGemini = modelData.models?.some(m => m.name === 'gemini-flash-latest');
-            if (hasGemini) {
-                setModel('gemini-flash-latest');
+            // Prefer gpt-4o if available
+            const hasGPT4o = modelData.models?.some(m => m.name === 'gpt-4o');
+            if (hasGPT4o) {
+                setModel('gpt-4o');
             } else if (modelData.models && modelData.models.length > 0) {
                 // Fallback
                 setModel(modelData.models[0].name);
