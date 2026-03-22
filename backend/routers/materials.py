@@ -50,7 +50,7 @@ async def generate_material(req: MaterialRequest, current_user: dict = Depends(g
                     {"role": "system", "content": "あなたは日本語教師です。"},
                     {"role": "user", "content": prompt}
                 ],
-                temperature=0.7
+                temperature=0.3
             )
             return {"result": response.choices[0].message.content}
         except Exception as e:
@@ -74,7 +74,7 @@ async def generate_material(req: MaterialRequest, current_user: dict = Depends(g
             # We'll just return whatever Gemini gives as string.
             response = model.generate_content(
                 prompt,
-                generation_config={"temperature": 0.7} 
+                generation_config={"temperature": 0.3} 
             )
             # Check for safety blocking
             if response.prompt_feedback.block_reason:
