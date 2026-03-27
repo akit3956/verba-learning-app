@@ -125,4 +125,4 @@ def format_teacher_notes(notes: List[Dict]) -> str:
         source = note['metadata'].get('source', 'Unknown')
         body += f"--- Source: {source} ---\n{note['content']}\n"
     
-    return header + body + "\n※上記の教案内容に100%忠実に、ミス・キャプランのメソッドに従って回答してください。\n"
+    return header + body + "\n※上記の教案の内容（教え方の構成、例文、導入のヒント）をプロの手本として最大限に活用し、ミス・キャプランのメソッドで回答してください。\n"
