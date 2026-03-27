@@ -61,3 +61,60 @@ def format_grammar_info(grammar_point: Dict) -> str:
 ■ 悪い使用例（避けること）:
 {bad_ex}
 """
+
+def get_openai_embedding(text: str) -> List[float]:
+    """Generates embedding for a given text using OpenAI."""
+    from openai import OpenAI
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    response = client.embeddings.create(
+        input=text,
+        model="text-embedding-3-small"
+    )
+    return response.data[0].embedding
+
+def search_teacher_notes(query: str, match_threshold: float = 0.3, match_count: int = 3) -> List[Dict]:
+    """
+    Searches teacher_embeddings table in Supabase via RPC or raw SQL.
+    We use the match_teacher_notes function defined in schema.sql.
+    """
+    from database import get_db_connection
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=lambda *args, **kwargs: conn.cursor(*args, **kwargs))
+        
+        query_embedding = get_openai_embedding(query)
+        
+        # Call the RPC function defined in Supabase
+        cur.execute(
+            "SELECT content, metadata, similarity FROM match_teacher_notes(%s, %s, %s)",
+            (query_embedding, match_threshold, match_count)
+        )
+        
+        rows = cur.fetchall()
+        results = []
+        for row in rows:
+            results.append({
+                "content": row[0],
+                "metadata": row[1],
+                "similarity": row[2]
+            })
+        
+        cur.close()
+        conn.close()
+        return results
+    except Exception as e:
+        print(f"Error searching teacher notes: {e}")
+        return []
+
+def format_teacher_notes(notes: List[Dict]) -> str:
+    """Formats retrieved chunks into a context string."""
+    if not notes:
+        return ""
+    
+    header = "\n【Aki先生の教案（バイブル）より抽出された関連資料】\n"
+    body = ""
+    for note in notes:
+        source = note['metadata'].get('source', 'Unknown')
+        body += f"--- Source: {source} ---\n{note['content']}\n"
+    
+    return header + body + "\n※上記の教案内容に100%忠実に、Aki先生のメソッドに従って回答してください。\n"

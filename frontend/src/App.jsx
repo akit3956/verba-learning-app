@@ -1,13 +1,14 @@
 import API_BASE_URL from "./api_config";
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Home, PenTool, Wallet as WalletIcon, LogOut, LayoutDashboard } from 'lucide-react';
+import { Home, PenTool, Wallet as WalletIcon, LogOut, LayoutDashboard, MessageCircle } from 'lucide-react';
 import Quiz from './pages/Quiz';
 import MaterialGenerator from './pages/MaterialGenerator';
 import Wallet from './pages/Wallet';
 import Auth from './pages/Auth';
 import ResetPassword from './pages/ResetPassword';
 import AdminDashboard from './pages/AdminDashboard';
+import Tutor from './pages/Tutor';
 import './App.css';
 
 // Simple Nav Component
@@ -37,6 +38,11 @@ function NavBar({ onLogout, userPlan }) {
         {!isStandard && (
           <Link to="/generator" className={getLinkStyle('/generator')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
             <PenTool size={20} /> Teacher Tools
+          </Link>
+        )}
+        {!isStandard && (
+          <Link to="/tutor" className={getLinkStyle('/tutor')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
+            <MessageCircle size={20} /> AI Tutor
           </Link>
         )}
         <Link to="/wallet" className={getLinkStyle('/wallet')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
@@ -130,6 +136,7 @@ function App() {
                 <Route path="/" element={<Quiz userPlan={userPlan} />} />
                 <Route path="/generator" element={<MaterialGenerator userPlan={userPlan} />} />
                 <Route path="/wallet" element={<Wallet />} />
+                <Route path="/tutor" element={<Tutor userPlan={userPlan} />} />
                 <Route path="/admin" element={<AdminDashboard />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

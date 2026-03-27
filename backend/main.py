@@ -13,6 +13,12 @@ from openai import AsyncOpenAI
 import google.generativeai as genai
 from prompts import get_quiz_prompt, get_aki_style_prompt
 
+from routers import wallet, materials, auth, tutor
+from routers.auth import get_current_user
+import config
+from pdf_utils import get_random_page_image
+from pdf_context import load_context_for_level
+
 def clean_json_string(s: str) -> str:
     """Robustly clean JSON string from LLM responses, removing markdown blocks."""
     if not s:
@@ -24,11 +30,6 @@ def clean_json_string(s: str) -> str:
 
 # New Modules (Trigger Reload)
 from database import init_db
-from routers import wallet, materials, auth
-from routers.auth import get_current_user
-import config
-from pdf_utils import get_random_page_image
-from pdf_context import load_context_for_level
 
 class ConfigUpdate(BaseModel):
     model: str
@@ -55,6 +56,7 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(auth.router)
 app.include_router(wallet.router)
 app.include_router(materials.router)
+app.include_router(tutor.router)
 
 # CORS configuration
 app.add_middleware(
