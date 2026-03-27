@@ -13,3 +13,4 @@ python-multipart
 psycopg2-binary
 python-docx
 python-pptx
+openpyxl

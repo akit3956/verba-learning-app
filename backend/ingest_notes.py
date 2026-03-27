@@ -42,6 +42,28 @@ def extract_text(file_path):
         print(f"Error extracting {file_path}: {e}")
     return text
 
+def extract_excel_text(file_path):
+    import openpyxl
+    text = ""
+    try:
+        wb = openpyxl.load_workbook(file_path, data_only=True)
+        for sheet in wb.worksheets:
+            text += f"--- Sheet: {sheet.title} ---\n"
+            for row in sheet.iter_rows(values_only=True):
+                # Filter out None and join values with space
+                row_text = " ".join([str(cell) for cell in row if cell is not None])
+                if row_text.strip():
+                    text += row_text + "\n"
+    except Exception as e:
+        print(f"Error extracting Excel {file_path}: {e}")
+    return text
+
+def extract_text_ext(file_path):
+    ext = os.path.splitext(file_path)[1].lower()
+    if ext == ".xlsx":
+        return extract_excel_text(file_path)
+    return extract_text(file_path) # Fallback to original
+
 def chunk_text(text, chunk_size=800, overlap=100):
     chunks = []
     # Simple character-based chunking for now
@@ -72,7 +94,7 @@ def ingest():
 
     for file_path in files:
         print(f"Processing {os.path.basename(file_path)}...")
-        full_text = extract_text(file_path)
+        full_text = extract_text_ext(file_path)
         if not full_text:
             continue
         
