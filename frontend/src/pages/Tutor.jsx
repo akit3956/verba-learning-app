@@ -38,13 +38,16 @@ const Tutor = ({ userPlan }) => {
                 body: JSON.stringify({ message: input })
             });
 
-            if (!response.ok) throw new Error('Failed to chat with tutor');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || 'Failed to chat with tutor');
+            }
             const data = await response.json();
 
             setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
         } catch (err) {
             console.error(err);
-            setMessages(prev => [...prev, { role: 'assistant', content: '申し訳ありません。 ミス・キャプランとの通信にエラーが発生しました。' }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: `エラーが発生しました: ${err.message}` }]);
         } finally {
             setLoading(false);
         }

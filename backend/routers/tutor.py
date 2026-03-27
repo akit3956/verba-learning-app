@@ -46,5 +46,8 @@ async def tutor_chat(req: ChatRequest, current_user: dict = Depends(get_current_
         )
         return {"reply": response.choices[0].message.content}
     except Exception as e:
-        print(f"Tutor Chat Error: {e}")
-        raise HTTPException(status_code=500, detail=f"AI Tutor Error: {str(e)}")
+        import traceback
+        error_msg = f"Tutor Chat Error: {str(e)}"
+        print(error_msg)
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=error_msg)

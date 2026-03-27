@@ -86,6 +86,7 @@ def search_teacher_notes(query: str, match_threshold: float = 0.3, match_count: 
         conn = get_db_connection()
         cur = conn.cursor(cursor_factory=lambda *args, **kwargs: conn.cursor(*args, **kwargs))
         
+        print(f"Searching teacher notes for: {query}")
         query_embedding = get_openai_embedding(query)
         
         # Call the RPC function defined in Supabase
@@ -95,6 +96,7 @@ def search_teacher_notes(query: str, match_threshold: float = 0.3, match_count: 
         )
         
         rows = cur.fetchall()
+        print(f"Found {len(rows)} matching chunks.")
         results = []
         for row in rows:
             results.append({
@@ -107,7 +109,9 @@ def search_teacher_notes(query: str, match_threshold: float = 0.3, match_count: 
         conn.close()
         return results
     except Exception as e:
+        import traceback
         print(f"Error searching teacher notes: {e}")
+        print(traceback.format_exc())
         return []
 
 def format_teacher_notes(notes: List[Dict]) -> str:
