@@ -153,7 +153,6 @@ async def get_models():
         {"name": "gemini-2.0-flash", "type": "cloud", "size": "Google (Fast & Accurate)"}
     ]
     return {"models": models}
-models}
 
 import rag_utils # Import the RAG module
 
