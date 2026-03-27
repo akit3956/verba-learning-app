@@ -4,7 +4,7 @@ import { Send, User, MessageCircle, RefreshCw, BookOpen } from 'lucide-react';
 
 const Tutor = ({ userPlan }) => {
     const [messages, setMessages] = useState([
-        { role: 'assistant', content: '初めまして、Akiです。今日はどのような日本語の学習をしましょうか？教案に基づいた特別なレッスンを始めましょう！' }
+        { role: 'assistant', content: '初めまして、ミス・キャプラン（Miss Kaplan）です。今日はどのような日本語の学習をしましょうか？教案に基づいた特別なレッスンを始めましょう！' }
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -44,7 +44,7 @@ const Tutor = ({ userPlan }) => {
             setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
         } catch (err) {
             console.error(err);
-            setMessages(prev => [...prev, { role: 'assistant', content: '申し訳ありません。 Aki先生との通信にエラーが発生しました。' }]);
+            setMessages(prev => [...prev, { role: 'assistant', content: '申し訳ありません。 ミス・キャプランとの通信にエラーが発生しました。' }]);
         } finally {
             setLoading(false);
         }
@@ -55,7 +55,7 @@ const Tutor = ({ userPlan }) => {
             <div className="tutor-header" style={{ padding: '20px', background: 'var(--primary-color)', color: 'white', display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <BookOpen size={24} />
                 <div>
-                    <h2 style={{ margin: 0, fontSize: '1.2rem' }}>Aki先生のAI教室</h2>
+                    <h2 style={{ margin: 0, fontSize: '1.2rem' }}>ミス・キャプランのAI教室</h2>
                     <p style={{ margin: 0, fontSize: '0.8rem', opacity: 0.9 }}>教案RAGシステム: 高精度・プロのメソッド</p>
                 </div>
             </div>
@@ -77,7 +77,7 @@ const Tutor = ({ userPlan }) => {
                             <RefreshCw className="spinner" size={18} />
                         </div>
                         <div style={{ padding: '12px 16px', borderRadius: '16px', background: 'white', color: '#a0aec0', fontSize: '0.9rem' }}>
-                            Aki先生が教案（バイブル）を確認中...
+                            ミス・キャプランが教案（バイブル）を確認中...
                         </div>
                     </div>
                 )}
@@ -89,7 +89,7 @@ const Tutor = ({ userPlan }) => {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    placeholder="日本語についてAki先生に聞いてみましょう..."
+                    placeholder="日本語についてミス・キャプランに聞いてみましょう..."
                     style={{ flex: 1, padding: '12px 16px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', transition: 'border-color 0.2s' }}
                     onFocus={(e) => e.target.style.borderColor = 'var(--primary-color)'}
                     onBlur={(e) => e.target.style.borderColor = '#e2e8f0'}

@@ -65,7 +65,11 @@ def format_grammar_info(grammar_point: Dict) -> str:
 def get_openai_embedding(text: str) -> List[float]:
     """Generates embedding for a given text using OpenAI."""
     from openai import OpenAI
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+    import config
+    api_key = os.getenv("OPENAI_API_KEY") or config.get_config().get("openai_api_key")
+    if not api_key:
+        raise ValueError("OpenAI API key not found for embeddings.")
+    client = OpenAI(api_key=api_key)
     response = client.embeddings.create(
         input=text,
         model="text-embedding-3-small"
@@ -111,10 +115,10 @@ def format_teacher_notes(notes: List[Dict]) -> str:
     if not notes:
         return ""
     
-    header = "\n【Aki先生の教案（バイブル）より抽出された関連資料】\n"
+    header = "\n【ミス・キャプランの教案（バイブル）より抽出された関連資料】\n"
     body = ""
     for note in notes:
         source = note['metadata'].get('source', 'Unknown')
         body += f"--- Source: {source} ---\n{note['content']}\n"
     
-    return header + body + "\n※上記の教案内容に100%忠実に、Aki先生のメソッドに従って回答してください。\n"
+    return header + body + "\n※上記の教案内容に100%忠実に、ミス・キャプランのメソッドに従って回答してください。\n"

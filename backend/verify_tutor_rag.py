@@ -18,7 +18,7 @@ def test_tutor_chat():
     
     # 認証トークンが必要な場合は取得（ここではダミーまたは既存のトークンを想定）
     # API呼び出しをエミュレート
-    print(f"Testing AI Tutor Chat RAG: {url}")
+    print(f"Testing AI Tutor Chat RAG (Miss Kaplan): {url}")
     print(f"Query: {payload['message']}")
     
     try:
