@@ -13,6 +13,7 @@ load_dotenv()
 
 # Configuration
 NOTES_DIR = os.path.join(os.path.dirname(__file__), "teacher_notes")
+PROJECT_ROOT = os.path.dirname(os.path.dirname(__file__)) # One level up from backend
 DB_URL = os.getenv("DATABASE_URL")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
@@ -90,10 +91,15 @@ def ingest():
     cur = conn.cursor()
 
     files = glob.glob(os.path.join(NOTES_DIR, "*.*"))
-    print(f"Found {len(files)} files in {NOTES_DIR}")
+    root_file = os.path.join(PROJECT_ROOT, "Verba N3 模擬試験.docx")
+    if os.path.exists(root_file):
+        files.append(root_file)
+        
+    print(f"Found {len(files)} files to process.")
 
     for file_path in files:
-        print(f"Processing {os.path.basename(file_path)}...")
+        file_name = os.path.basename(file_path)
+        print(f"Processing {file_name}...")
         full_text = extract_text_ext(file_path)
         if not full_text:
             continue

@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 def get_db_connection():
     import psycopg2
@@ -51,7 +51,6 @@ def update_config(key, value):
         
     try:
         cur = conn.cursor()
-        cur.execute("INSERT INTO settings (key, value) VALUES (%s, %s) ON CONFLICT (key) DO REPLACE SET value = EXCLUDED.value", (key, value))
         # Wait, PostgreSQL syntax for REPLACE is different.
         cur.execute("""
             INSERT INTO settings (key, value) 

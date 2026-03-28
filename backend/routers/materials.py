@@ -92,8 +92,26 @@ async def generate_material(req: MaterialRequest, current_user: dict = Depends(g
                  print(f"Gemini Empty Response: {response.prompt_feedback}")
                  raise HTTPException(status_code=500, detail="Gemini returned no text (likely safety filter).")
         except Exception as e:
-            print(f"Gemini Material Error: {e}")
-            raise HTTPException(status_code=500, detail=f"Gemini API Error: {e}")
+            error_str = str(e)
+            if "429" in error_str or "quota" in error_str.lower():
+                print(f"Gemini Quota Exceeded (429). Falling back to GPT-4o...")
+                # Fallback to OpenAI
+                client = get_openai_client()
+                if not client:
+                    raise HTTPException(status_code=503, detail="Gemini Quota Exceeded and OpenAI not configured.")
+                
+                response = await client.chat.completions.create(
+                    model="gpt-4o",
+                    messages=[
+                        {"role": "system", "content": "あなたは日本語教師です。（Geminiフォールバック）"},
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=0.2
+                )
+                return {"result": response.choices[0].message.content}
+            else:
+                print(f"Gemini Material Error: {e}")
+                raise HTTPException(status_code=500, detail=f"Gemini API Error: {e}")
 
     # Model Restriction strictly enforced above
     else:

@@ -36,7 +36,7 @@ class ConfigUpdate(BaseModel):
     openai_api_key: str = ""
     gemini_api_key: str = ""
 
-load_dotenv()
+load_dotenv(override=True)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -244,8 +244,27 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                         cleaned_content = clean_json_string(content)
                         result_json = json.loads(cleaned_content)
                     except Exception as e:
-                        print(f"Gemini Error: {e}")
-                        raise HTTPException(status_code=500, detail=f"Gemini API Error: {e}")
+                        error_str = str(e)
+                        if "429" in error_str or "quota" in error_str.lower():
+                            print(f"Gemini Quota Exceeded (429). Falling back to GPT-4o...")
+                            # Fallback to OpenAI
+                            if not openai_client:
+                                raise HTTPException(status_code=503, detail="Gemini Quota Exceeded and OpenAI not configured.")
+                            
+                            response = await openai_client.chat.completions.create(
+                                model="gpt-4o",
+                                messages=[
+                                    {"role": "system", "content": "You are a Japanese language quiz generator. Output must be valid JSON. (Gemini Fallback)"},
+                                    {"role": "user", "content": prompt}
+                                ],
+                                temperature=0.2,
+                                response_format={"type": "json_object"}
+                            )
+                            content = response.choices[0].message.content
+                            result_json = json.loads(clean_json_string(content))
+                        else:
+                            print(f"Gemini Error: {e}")
+                            raise HTTPException(status_code=500, detail=f"Gemini API Error: {e}")
 
                 else:
                     # Invalid or local model (already handled by target_model set to gpt-4o)

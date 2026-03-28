@@ -62,14 +62,16 @@ def format_grammar_info(grammar_point: Dict) -> str:
 {bad_ex}
 """
 
-def get_openai_embedding(text: str) -> List[float]:
+def get_openai_embedding(text):
     """Generates embedding for a given text using OpenAI."""
     from openai import OpenAI
     import config
-    api_key = os.getenv("OPENAI_API_KEY") or config.get_config().get("openai_api_key")
-    if not api_key:
+    # Prefer database setting over environment variable
+    cfg = config.get_config()
+    current_api_key = os.getenv("OPENAI_API_KEY") or cfg.get("openai_api_key")
+    if not current_api_key:
         raise ValueError("OpenAI API key not found for embeddings.")
-    client = OpenAI(api_key=api_key)
+    client = OpenAI(api_key=current_api_key)
     response = client.embeddings.create(
         input=text,
         model="text-embedding-3-small"
@@ -84,14 +86,14 @@ def search_teacher_notes(query: str, match_threshold: float = 0.3, match_count: 
     from database import get_db_connection
     try:
         conn = get_db_connection()
-        cur = conn.cursor(cursor_factory=lambda *args, **kwargs: conn.cursor(*args, **kwargs))
+        cur = conn.cursor()
         
         print(f"Searching teacher notes for: {query}")
         query_embedding = get_openai_embedding(query)
         
         # Call the RPC function defined in Supabase
         cur.execute(
-            "SELECT content, metadata, similarity FROM match_teacher_notes(%s, %s, %s)",
+            "SELECT content, metadata, similarity FROM match_teacher_notes(%s::vector, %s, %s)",
             (query_embedding, match_threshold, match_count)
         )
         
