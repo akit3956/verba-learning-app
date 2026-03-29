@@ -80,9 +80,12 @@ class MockTestRequest(BaseModel):
     model: str = "gpt-4o"
     api_key: str = ""
 
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-openai_client = AsyncOpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+def get_openai_client():
+    cfg = config.get_config()
+    api_key = cfg.get("openai_api_key") or os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        return None
+    return AsyncOpenAI(api_key=api_key)
 
 @app.get("/config")
 async def get_config_endpoint():
@@ -103,9 +106,8 @@ async def update_config_endpoint(update: ConfigUpdate):
     if update.openai_api_key and "*" not in update.openai_api_key:
         config.update_config("openai_api_key", update.openai_api_key)
         # Re-initialize OpenAI client
-        global openai_client
-        print(f"Re-initializing OpenAI client with new key: {update.openai_api_key[:10]}...")
-        openai_client = AsyncOpenAI(api_key=update.openai_api_key)
+        # Force reload in config service (handled by config.update_config)
+        pass
 
     if update.gemini_api_key and "*" not in update.gemini_api_key:
         config.update_config("gemini_api_key", update.gemini_api_key)
@@ -116,6 +118,33 @@ async def update_config_endpoint(update: ConfigUpdate):
     
     return {"message": "Config updated", "config": await get_config_endpoint()}
 
+@app.get("/diagnostic/api-key")
+async def diagnostic_api_key():
+    # Helper to mask the key
+    def mask_key(key: str) -> str:
+        if not key: return "N/A"
+        if len(key) > 12:
+            return f"{key[:8]}...{key[-4:]}"
+        return "****"
+
+    # Check multiple sources
+    cfg = config.get_config()
+    db_key = cfg.get("openai_api_key")
+    env_key = os.getenv("OPENAI_API_KEY")
+    
+    # Priority used in the app
+    active_key = db_key or env_key
+    
+    source = "Database" if db_key else "Environment"
+    if not active_key: source = "None"
+
+    return {
+        "masked_key": mask_key(active_key),
+        "source": source,
+        "env_present": bool(env_key),
+        "db_present": bool(db_key)
+    }
+
 @app.get("/config/test")
 async def test_api_config(current_user: dict = Depends(get_current_user)):
     if current_user.get("username") != "aki":
@@ -124,10 +153,11 @@ async def test_api_config(current_user: dict = Depends(get_current_user)):
     results = {"openai": "Not Configured", "gemini": "Not Configured"}
     
     # Test OpenAI
-    if openai_client:
+    client = get_openai_client()
+    if client:
         try:
             # Simple call to list models to verify key
-            await openai_client.models.list()
+            await client.models.list()
             results["openai"] = "✅ Success"
         except Exception as e:
             results["openai"] = f"❌ Error: {str(e)}"
@@ -178,6 +208,17 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
         except Exception as e:
             print(f"Failed to load reference: {e}")
 
+    # Load additional context from N5~N1PDF files
+    try:
+        from pdf_context import load_context_for_level
+        pdf_ctx = load_context_for_level(req.level, req.category)
+        if pdf_ctx:
+            # Append the PDF context to the static text reference
+            reference_text += f"\n\n【提供された教材資料】\n{pdf_ctx}"
+    except Exception as e:
+        print(f"Error loading PDF context: {e}")
+
+
     # Determine Strategy: Aki Style (Loop) vs Legacy (Batch)
     # Aki Style is for Grammar/Vocab/Quiz (Single question focused)
     # Legacy is for Reading (Passage based)
@@ -203,13 +244,14 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                 result_json = {}
 
                 if is_openai:
-                    if not openai_client:
-                        print("Error: openai_client is None")
+                    client = get_openai_client()
+                    if not client:
+                        print("Error: OpenAI client could not be initialized")
                         raise HTTPException(status_code=503, detail="OpenAI API key not configured")
                     
                     print(f"Sending request to OpenAI ({req.model})...")
                     try:
-                        response = await openai_client.chat.completions.create(
+                        response = await client.chat.completions.create(
                             model=target_model,
                             messages=[
                                 {"role": "system", "content": "You are a specific Japanese language quiz generator. Output must be valid JSON."},
@@ -248,10 +290,11 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                         if "429" in error_str or "quota" in error_str.lower():
                             print(f"Gemini Quota Exceeded (429). Falling back to GPT-4o...")
                             # Fallback to OpenAI
-                            if not openai_client:
+                            client = get_openai_client()
+                            if not client:
                                 raise HTTPException(status_code=503, detail="Gemini Quota Exceeded and OpenAI not configured.")
                             
-                            response = await openai_client.chat.completions.create(
+                            response = await client.chat.completions.create(
                                 model="gpt-4o",
                                 messages=[
                                     {"role": "system", "content": "You are a Japanese language quiz generator. Output must be valid JSON. (Gemini Fallback)"},
@@ -312,12 +355,13 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
 
         is_openai = target_model.startswith("gpt-")
         if is_openai:
-            if not openai_client:
+            client = get_openai_client()
+            if not client:
                  raise HTTPException(status_code=503, detail="OpenAI API key not configured")
             
             print(f"Sending request to OpenAI ({req.model}) for Reading...")
             try:
-                response = await openai_client.chat.completions.create(
+                response = await client.chat.completions.create(
                     model=target_model,
                     messages=[
                         {"role": "system", "content": "You are a Japanese teacher. Output must be valid JSON."},
@@ -389,7 +433,7 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
     if error:
         raise HTTPException(status_code=404, detail=error)
     
-    current_api_key_openai = req.api_key or os.getenv("OPENAI_API_KEY") or config.get_config().get("openai_api_key")
+    # We'll use the dynamic get_openai_client for OpenAI, but need gemini_key below just in case.
     
     prompt = f"""
     You are a Japanese exam digitizer. 
@@ -421,7 +465,7 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
 
     try:
         if target_model.startswith("gemini"):
-            gemini_key = os.getenv("GEMINI_API_KEY") or config.get_config().get("gemini_api_key")
+            gemini_key = config.get_config().get("gemini_api_key") or os.getenv("GEMINI_API_KEY")
             if not gemini_key:
                  raise HTTPException(status_code=401, detail="Gemini API Key not configured")
             
@@ -438,10 +482,10 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
             
             content = response.text
         else:
-            if not current_api_key_openai:
-                 raise HTTPException(status_code=401, detail="OpenAI API Key not configured")
+            client = get_openai_client()
+            if not client:
+                raise HTTPException(status_code=401, detail="OpenAI API Key not configured")
             
-            client = AsyncOpenAI(api_key=current_api_key_openai)
             vision_model = "gpt-4o"
             
             response = await client.chat.completions.create(

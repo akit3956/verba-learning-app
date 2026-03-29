@@ -40,7 +40,7 @@ def load_config():
 global_config = load_config()
 
 def get_config():
-    return global_config
+    return load_config()
 
 def update_config(key, value):
     global_config[key] = value

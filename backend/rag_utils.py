@@ -68,7 +68,7 @@ def get_openai_embedding(text):
     import config
     # Prefer database setting over environment variable
     cfg = config.get_config()
-    current_api_key = os.getenv("OPENAI_API_KEY") or cfg.get("openai_api_key")
+    current_api_key = cfg.get("openai_api_key") or os.getenv("OPENAI_API_KEY")
     if not current_api_key:
         raise ValueError("OpenAI API key not found for embeddings.")
     client = OpenAI(api_key=current_api_key)
