@@ -208,15 +208,33 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
         except Exception as e:
             print(f"Failed to load reference: {e}")
 
-    # Load additional context from N5~N1PDF files
+    # 1. Load context from N5~N1PDF files (PDF, PPTX, XLSX)
     try:
         from pdf_context import load_context_for_level
         pdf_ctx = load_context_for_level(req.level, req.category)
         if pdf_ctx:
-            # Append the PDF context to the static text reference
             reference_text += f"\n\n【提供された教材資料】\n{pdf_ctx}"
     except Exception as e:
-        print(f"Error loading PDF context: {e}")
+        print(f"Error loading PDF/PPT context from folder: {e}")
+
+    # --- Load Teacher Notes (Vector RAG) and Grammar DB ---
+    try:
+        from rag_utils import search_teacher_notes, format_teacher_notes, search_grammar, format_grammar_info
+        
+        # 1. Grammar DB lookup
+        grammar_point = search_grammar(req.topic, req.level)
+        if grammar_point:
+            reference_text += format_grammar_info(grammar_point)
+            
+        # 2. Teacher Notes Vector Search (AI Sensei consistency)
+        # Search by topic if possible, otherwise by category
+        query = req.topic if req.topic and len(req.topic) > 1 else req.category
+        notes = search_teacher_notes(query)
+        if notes:
+            reference_text += format_teacher_notes(notes)
+            
+    except Exception as e:
+        print(f"Error loading RAG context (Teacher Notes/Grammar DB): {e}")
 
 
     # Determine Strategy: Aki Style (Loop) vs Legacy (Batch)

@@ -3,25 +3,44 @@ import glob
 import pdfplumber
 import random
 
-# Base Directory for PDFs
+# Base Directory for 教材 (PDFs, PPTs, etc.)
 PDF_DIR = os.path.join(os.path.dirname(__file__), "../N5~N1PDF")
 
-# Cache to store loaded text to avoid re-reading PDFs
-# Key: "N3_G", Value: "extracted text..."
-_pdf_cache = {}
+# Cache to store loaded text to avoid re-reading files
+_context_cache = {}
+
+def extract_text_from_file(file_path: str) -> str:
+    """Extracts text based on file extension (PDF, PPTX, XLSX)."""
+    ext = os.path.splitext(file_path)[1].lower()
+    try:
+        if ext == ".pdf":
+            text_content = ""
+            with pdfplumber.open(file_path) as pdf:
+                # Limit to first 10 pages for search relevance and context size
+                max_pages = min(len(pdf.pages), 10)
+                for i in range(max_pages):
+                    page_text = pdf.pages[i].extract_text()
+                    if page_text:
+                        text_content += page_text + "\n\n"
+            return text_content
+        elif ext == ".pptx":
+            from utils import extract_text_from_pptx
+            with open(file_path, "rb") as f:
+                return extract_text_from_pptx(f.read())
+        elif ext == ".xlsx":
+            from utils import extract_text_from_xlsx
+            with open(file_path, "rb") as f:
+                return extract_text_from_xlsx(f.read())
+    except Exception as e:
+        print(f"Error extracting from {file_path}: {e}")
+    return ""
 
 def load_context_for_level(level: str, category: str) -> str:
     """
-    Loads relevant PDF text context based on JLPT level and category.
-    
-    Args:
-        level: JLPT Level (e.g., "N3")
-        category: Question category (e.g., "grammar", "reading", "vocab")
-        
-    Returns:
-        Extracted text content from the PDF, or empty string if no PDF found.
+    Loads relevant PDF/PPT/Excel context based on JLPT level and category.
+    Searches the N5~N1PDF directory.
     """
-    global _pdf_cache
+    global _context_cache
     
     # Map category to file code
     cat_code = ""
@@ -35,71 +54,51 @@ def load_context_for_level(level: str, category: str) -> str:
     cache_key = f"{level}_{cat_code}"
     
     # Return cached content if available
-    if cache_key in _pdf_cache:
-        print(f"PDF Context: Using cached content for {cache_key}")
-        return _pdf_cache[cache_key]
+    if cache_key in _context_cache:
+        return _context_cache[cache_key]
     
-    # 1. Search for "Textbook" (Minna no Nihongo) - Highest Priority
-    # This provides high-quality, natural Japanese context (Dialogue, Sentence Patterns)
-    # which is better than just a grammar list for generating natural quizzes.
-    search_pattern_textbook = os.path.join(PDF_DIR, f"*{level}*みんなの日本語*.pdf")
-    files_textbook = glob.glob(search_pattern_textbook)
+    # Extensions to search for
+    extensions = [".pdf", ".pptx", ".xlsx"]
+    target_file = None
 
-    if files_textbook:
-        target_file = files_textbook[0]
-        print(f"PDF Context: Found TEXTBOOK match: {os.path.basename(target_file)}")
+    # 1. Search for "みんなの日本語" (Textbook) - Highest Priority
+    for ext in extensions:
+        search_pattern = os.path.join(PDF_DIR, f"*{level}*みんなの日本語*{ext}")
+        files = glob.glob(search_pattern)
+        if files:
+            target_file = files[0]
+            break
     
-    # 2. If no textbook, search for Specific Logic (Level + Category)
-    elif category:
-        # Pattern: *N3*G*.pdf
-        search_pattern_specific = os.path.join(PDF_DIR, f"*{level}*{cat_code}*.pdf")
-        files_specific = glob.glob(search_pattern_specific)
-        if files_specific:
-            target_file = files_specific[0]
-            print(f"PDF Context: Found specific match: {os.path.basename(target_file)}")
+    # 2. Search for Specific (Level + Category code)
+    if not target_file and cat_code:
+        for ext in extensions:
+            search_pattern = os.path.join(PDF_DIR, f"*{level}*{cat_code}*{ext}")
+            files = glob.glob(search_pattern)
+            if files:
+                target_file = files[0]
+                break
             
-    # 3. Fallback to General Level PDF if still no target
+    # 3. Fallback to General Level match
     if not target_file:
-        # Pattern: *N3*.pdf
-        search_pattern_general = os.path.join(PDF_DIR, f"*{level}*.pdf")
-        files_general = glob.glob(search_pattern_general)
-        
-        if files_general:
-            # Sort by length to likely pick 'JLPT N3.pdf' over 'N3G.pdf' if both exist and handled above
-            files_general.sort(key=len)
-            target_file = files_general[0]
-            print(f"PDF Context: Found general match: {os.path.basename(target_file)}")
+        for ext in extensions:
+            search_pattern = os.path.join(PDF_DIR, f"*{level}*{ext}")
+            files = glob.glob(search_pattern)
+            if files:
+                files.sort(key=len) # Pick the shortest match (e.g., 'N3.pdf' over 'N3_Vocab.pdf')
+                target_file = files[0]
+                break
 
     if not target_file:
-        print(f"PDF Context: No PDF found for {level} {category}")
+        print(f"教材 Loader: No matching file found for {level} {category} in {PDF_DIR}")
         return ""
         
-    # Extract Text
-    try:
-        text_content = ""
-        with pdfplumber.open(target_file) as pdf:
-            # Limit to first 5-10 pages to capture style without overloading context
-            # Or pick random pages?
-            # Let's take pages 2-6 (skipping cover)
-            max_pages = min(len(pdf.pages), 10)
-            selected_pages = range(1, max_pages) # 0-indexed, skip 0 (cover)
-            
-            for i in selected_pages:
-                page_text = pdf.pages[i].extract_text()
-                if page_text:
-                    text_content += page_text + "\n\n"
-                    
-        # Clean up
-        text_content = text_content.strip()
-        
-        # Cache it (Limit size if needed, but text is usually small enough)
-        # Truncate to approx 2000 chars to strictly limit context usage
-        if len(text_content) > 3000:
-             text_content = text_content[:3000] + "...(truncated)"
-             
-        _pdf_cache[cache_key] = text_content
-        return text_content
-        
-    except Exception as e:
-        print(f"PDF Context Error reading {target_file}: {e}")
-        return ""
+    print(f"教材 Loader: Found reference file: {os.path.basename(target_file)}")
+    text_content = extract_text_from_file(target_file)
+    text_content = text_content.strip()
+    
+    # Cache and return (truncate to 3000 chars)
+    if len(text_content) > 3000:
+         text_content = text_content[:3000] + "...(truncated)"
+         
+    _context_cache[cache_key] = text_content
+    return text_content
