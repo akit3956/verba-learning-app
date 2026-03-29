@@ -257,7 +257,7 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                                 {"role": "system", "content": "You are a specific Japanese language quiz generator. Output must be valid JSON."},
                                 {"role": "user", "content": prompt}
                             ],
-                            temperature=0.1,
+                            temperature=0.2,
                             response_format={"type": "json_object"}
                         )
                         content = response.choices[0].message.content
@@ -279,7 +279,7 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                         # Gemini 1.5 supports JSON response schema via generation_config
                         response = model.generate_content(
                             prompt,
-                            generation_config={"response_mime_type": "application/json", "temperature": 0.1}
+                            generation_config={"response_mime_type": "application/json", "temperature": 0.2}
                         )
                         content = response.text
                         print(f"=== Gemini Response ===\n{content[:100]}...\n===")
