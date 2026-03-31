@@ -119,38 +119,36 @@ function App() {
 
   return (
     <Router>
-      <div className="container">
-        {!token ? (
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={
-              <div className="min-h-screen bg-[#0f172a] flex justify-center items-center p-6 relative overflow-hidden">
-                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full"></div>
-                <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full"></div>
-                <div className="relative z-10 w-full max-w-md">
-                  <Auth onLogin={handleLogin} />
-                </div>
+      {!token ? (
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/auth" element={
+            <div className="min-h-screen bg-[#0f172a] flex justify-center items-center p-6 relative overflow-hidden">
+              <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full"></div>
+              <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full"></div>
+              <div className="relative z-10 w-full max-w-md">
+                <Auth onLogin={handleLogin} />
               </div>
-            } />
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        ) : (
-          <>
-            <NavBar onLogout={handleLogout} userPlan={userPlan} />
-            <div className="content-wrapper">
-              <Routes>
-                <Route path="/" element={<Quiz userPlan={userPlan} />} />
-                <Route path="/generator" element={<MaterialGenerator userPlan={userPlan} />} />
-                <Route path="/wallet" element={<Wallet />} />
-                <Route path="/tutor" element={<Tutor userPlan={userPlan} />} />
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
             </div>
-          </>
-        )}
-      </div>
+          } />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      ) : (
+        <div className="container">
+          <NavBar onLogout={handleLogout} userPlan={userPlan} />
+          <div className="content-wrapper">
+            <Routes>
+              <Route path="/" element={<Quiz userPlan={userPlan} />} />
+              <Route path="/generator" element={<MaterialGenerator userPlan={userPlan} />} />
+              <Route path="/wallet" element={<Wallet />} />
+              <Route path="/tutor" element={<Tutor userPlan={userPlan} />} />
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+        </div>
+      )}
     </Router>
   );
 }
