@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Merged Styles from Standalone App (Premium Glassmorphism) */
 :root {
   --primary-color: #6366f1;

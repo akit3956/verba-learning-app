@@ -9,6 +9,7 @@ import Auth from './pages/Auth';
 import ResetPassword from './pages/ResetPassword';
 import AdminDashboard from './pages/AdminDashboard';
 import Tutor from './pages/Tutor';
+import Landing from './pages/Landing';
 import './App.css';
 
 // Simple Nav Component
@@ -121,12 +122,18 @@ function App() {
       <div className="container">
         {!token ? (
           <Routes>
-            <Route path="/reset-password/:token" element={<ResetPassword />} />
-            <Route path="*" element={
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '80vh' }}>
-                <Auth onLogin={handleLogin} />
+            <Route path="/" element={<Landing />} />
+            <Route path="/auth" element={
+              <div className="min-h-screen bg-[#0f172a] flex justify-center items-center p-6 relative overflow-hidden">
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600/10 blur-[120px] rounded-full"></div>
+                <div className="relative z-10 w-full max-w-md">
+                  <Auth onLogin={handleLogin} />
+                </div>
               </div>
             } />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         ) : (
           <>
