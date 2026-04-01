@@ -11,17 +11,23 @@ const Auth = ({ onLogin }) => {
     const [error, setError] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
     const [loading, setLoading] = useState(false);
-    const [isFounderFlow, setIsFounderFlow] = useState(false);
+    const [planType, setPlanType] = useState('standard');
+    const [isPaymentVerified, setIsPaymentVerified] = useState(false);
 
     useEffect(() => {
-        // Check URL parameters for the founder plan redirect
         const params = new URLSearchParams(window.location.search);
-        if (params.get('plan') === 'founder') {
-            setIsFounderFlow(true);
-            setIsLogin(false); // Force default to Sign Up
+        const plan = params.get('plan');
+        const payment = params.get('payment');
 
-            // Remove query parameter from URL to avoid re-triggering if they refresh
-            window.history.replaceState({}, document.title, "/");
+        if (plan) {
+            setPlanType(plan);
+            if (plan !== 'standard') {
+                setIsLogin(false); // Force Sign Up for paid plans
+            }
+        }
+
+        if (payment === 'success') {
+            setIsPaymentVerified(true);
         }
     }, []);
 
@@ -78,7 +84,13 @@ const Auth = ({ onLogin }) => {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 };
             } else {
-                body = JSON.stringify({ email, username, password, is_founder: isFounderFlow });
+                body = JSON.stringify({ 
+                    email, 
+                    username, 
+                    password, 
+                    plan_type: planType,
+                    is_founder: planType === 'founder' 
+                });
                 headers = { 'Content-Type': 'application/json' };
             }
 
@@ -106,10 +118,14 @@ const Auth = ({ onLogin }) => {
     return (
         <div style={styles.container}>
             <div style={styles.card}>
-                {isFounderFlow && !isLogin && (
+                {isPaymentVerified && !isLogin && (
                     <div style={styles.founderBanner}>
-                        <Sparkles size={20} color="#d69e2e" />
-                        <span>Thank you for funding Verba! Create your account below to activate Founder's status.</span>
+                        <Sparkles size={20} color="#2f855a" />
+                        <span>
+                            {planType === 'founder' 
+                                ? "Thank you for funding Verba! Create your account to activate Founder's status."
+                                : `Payment Verified! Create your account to activate your ${planType.toUpperCase()} status.`}
+                        </span>
                     </div>
                 )}
 

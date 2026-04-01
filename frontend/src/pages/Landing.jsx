@@ -1,8 +1,47 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sparkles, Check, Star, Zap, MessageCircle, ArrowRight, User, Shield } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+const PayPalButton = ({ amount, plan, onSuccess }) => {
+  const containerRef = React.useRef(null);
+
+  React.useEffect(() => {
+    if (window.paypal && containerRef.current) {
+      containerRef.current.innerHTML = ''; // Clear previous button
+      window.paypal.Buttons({
+        style: {
+          shape: 'rect',
+          color: 'gold',
+          layout: 'vertical',
+          label: 'pay',
+        },
+        createOrder: (data, actions) => {
+          return actions.order.create({
+            purchase_units: [{
+              amount: { value: amount }
+            }]
+          });
+        },
+        onApprove: (data, actions) => {
+          return actions.order.capture().then((details) => {
+            onSuccess(plan);
+          });
+        }
+      }).render(containerRef.current);
+    }
+  }, [amount, plan, onSuccess]);
+
+  return <div ref={containerRef} className="w-full mt-4" />;
+};
 
 const Landing = () => {
+  const navigate = useNavigate();
+
+  const handlePaymentSuccess = (plan) => {
+    navigate(`/auth?payment=success&plan=${plan}`);
+  };
+
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 overflow-x-hidden">
       {/* Background Orbs */}
@@ -40,9 +79,10 @@ const Landing = () => {
         </div>
         
         <h1 className="text-5xl md:text-7xl font-black mb-6 leading-tight tracking-tight text-white">
-          Master Japanese with <br />
-          <span className="bg-gradient-to-r from-indigo-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent">
-            AI Personalized Coaching
+          <span className="text-3xl md:text-4xl block mb-4 text-indigo-400">🇯🇵 Japanese Teacher x Web3 x AI</span>
+          Next Gen Language App: <br />
+          <span className="bg-gradient-to-r from-indigo-400 via-blue-400 to-emerald-400 bg-clip-text text-transparent italic">
+            'Learn to Earn'
           </span>
         </h1>
         
@@ -155,7 +195,7 @@ const Landing = () => {
              <div className="absolute inset-0 bg-indigo-500/20 blur-[100px] rounded-full scale-75 group-hover:scale-100 transition-duration-700"></div>
              <div className="relative rounded-[2.5rem] border border-white/10 overflow-hidden shadow-2xl glass p-2 backdrop-blur-3xl aspect-[4/5] md:aspect-auto h-[500px]">
                 <img 
-                  src="/assets/miss_kaplan.png" 
+                  src="/assets/miss_kaplan.webp" 
                   alt="Miss Kaplan AI Tutor" 
                   className="w-full h-full object-cover rounded-[2rem]"
                   onError={(e) => { e.target.src = 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=1000&auto=format&fit=crop'; }}
@@ -226,16 +266,21 @@ const Landing = () => {
                   1.5x VRB Token Boost
                 </li>
               </ul>
-              <Link to="/auth" className="w-full py-4 text-center bg-blue-600 rounded-2xl text-white font-bold hover:bg-blue-500 transition-colors shadow-lg shadow-blue-600/20">Upgrade Now</Link>
-            </div>
+               <PayPalButton 
+                 amount="12.99" 
+                 plan="pro" 
+                 onSuccess={handlePaymentSuccess} 
+               />
+             </div>
 
             {/* Founder's Pass */}
             <div className="relative group lg:-translate-y-4">
               <div className="absolute inset-0 bg-indigo-500/10 blur-xl rounded-[2.5rem]"></div>
               <div className="relative bg-gradient-to-br from-indigo-600 to-blue-700 p-[2px] rounded-[2.5rem] shadow-2xl shadow-indigo-500/20">
                 <div className="bg-[#0f172a] rounded-[2.4rem] p-8 h-full flex flex-col">
-                  <div className="absolute top-6 right-6">
+                  <div className="absolute top-6 right-6 flex flex-col items-end gap-2">
                      <span className="bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full animate-pulse shadow-lg shadow-indigo-500/30">Best Value</span>
+                     <span className="bg-red-500/20 text-red-400 text-[9px] font-bold uppercase tracking-tight px-2 py-0.5 rounded border border-red-500/30">Spots filling up fast! ⚡</span>
                   </div>
                   <div className="mb-8">
                     <div className="flex items-center gap-2 mb-4">
@@ -262,14 +307,13 @@ const Landing = () => {
                       Founder's Club Discord VIP
                     </li>
                   </ul>
-                  <Link 
-                    to="/auth?plan=founder" 
-                    className="w-full py-4 text-center bg-indigo-500 rounded-2xl text-white font-black hover:bg-white hover:text-indigo-600 transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)] group-hover:scale-105"
-                  >
-                    Get Lifetime Access
-                  </Link>
-                </div>
-              </div>
+                   <PayPalButton 
+                     amount="30.00" 
+                     plan="founder" 
+                     onSuccess={handlePaymentSuccess} 
+                   />
+                 </div>
+               </div>
             </div>
           </div>
         </div>
