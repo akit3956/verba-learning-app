@@ -11,25 +11,45 @@ st.set_page_config(
 
 # ------------------------------
 
+# 🧪 Aki Labs - Experimental Sandbox
+# This environment is for testing new AI prompts and features.
+
+# Simple Password Protection
+PASSWORD = st.secrets.get("LABS_PASSWORD", "AkiLabs2026") # Default for safety
+
+def check_password():
+    if "password_correct" not in st.session_state:
+        st.session_state.password_correct = False
+
+    if st.session_state.password_correct:
+        return True
+
+    st.title("🧪 Aki Labs")
+    st.info("This is an experimental testing environment. If you are a student, please visit our official site.")
+    st.link_button("Go to Official Verba Site 👉", "https://verba-learning-app.vercel.app/")
+    
+    st.divider()
+    
+    pwd = st.text_input("Enter Lab Access Password", type="password")
+    if st.button("Unlock Lab"):
+        if pwd == PASSWORD:
+            st.session_state.password_correct = True
+            st.rerun()
+        else:
+            st.error("😕 Incorrect password.")
+    return False
+
+if not check_password():
+    st.stop() # Halt execution if not authorized
+
+# --- Authorized Lab Content Below ---
+
 # Main Title Area
-st.title("🇯🇵 Japanese Teacher x Web3 x AI")
+st.title("🧪 Aki Labs (Sandbox)")
+st.caption("Verba Experimental Environment - TEST ONLY")
 st.header("Next Gen Language App: 'Learn to Earn'")
 
-# Notification Box
-st.info("💡 We are currently accepting pre-orders for the Founder's Pack to raise development funds.")
-
-# Introduction
-st.subheader("👋 Hi, I'm Aki. I'm a former Japanese teacher.")
-st.write("""
-I have seen many students give up on their dream of learning Japanese because they 'didn't have money' or 'lost motivation'.
-
-So, I decided to build a solution using the latest AI and blockchain technology.
-**An app where the more you study, the more rewards (tokens) you earn.**
-
-**Project Name: 'Verba (VRB)'**
-
-Learning words (Verba) helps your life. Let's build this world together.
-""")
+# ... rest of the content ...
 
 st.divider()
 
