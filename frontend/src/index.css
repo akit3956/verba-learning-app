@@ -355,3 +355,27 @@ rt {
   transform: none;
   box-shadow: none;
 }
+/* Ruby & Furigana Styling for Miss Kaplan */
+ruby {
+    ruby-align: center;
+    ruby-position: over;
+}
+
+rt {
+    font-size: 0.6em;
+    font-weight: 500;
+    color: var(--primary-color, #7c3aed);
+    user-select: none; /* Prevents selecting furigana when copying text */
+    padding-bottom: 2px;
+}
+
+/* Ensure ReactMarkdown doesn't add extra margins inside chat bubbles */
+.chat-messages .react-markdown p {
+    margin: 0;
+}
+
+.chat-messages .react-markdown ul, 
+.chat-messages .react-markdown ol {
+    margin: 8px 0;
+    padding-left: 20px;
+}

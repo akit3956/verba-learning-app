@@ -97,8 +97,18 @@ def ingest():
         
     print(f"Found {len(files)} files to process.")
 
+    # Get already ingested filenames from DB
+    cur.execute("SELECT DISTINCT metadata->>'source' FROM teacher_embeddings")
+    ingested_sources = {row[0] for row in cur.fetchall()}
+    print(f"Already ingested {len(ingested_sources)} sources.")
+
     for file_path in files:
         file_name = os.path.basename(file_path)
+        
+        if file_name in ingested_sources:
+            print(f"Skipping {file_name} (already ingested).")
+            continue
+
         print(f"Processing {file_name}...")
         full_text = extract_text_ext(file_path)
         if not full_text:

@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
 import API_BASE_URL from "../api_config";
 import { Send, User, MessageCircle, RefreshCw, BookOpen } from 'lucide-react';
 
 const Tutor = ({ userPlan }) => {
     const [messages, setMessages] = useState([
-        { role: 'assistant', content: '初めまして、ミス・キャプラン（Miss Kaplan）です。今日はどのような日本語の学習をしましょうか？教案に基づいた特別なレッスンを始めましょう！' }
+        { role: 'assistant', content: '<ruby>初<rt>はじ</rt></ruby>めまして、ミス・キャプラン（Miss Kaplan）です。<ruby>今日<rt>きょう</rt></ruby>はどのような<ruby>日本語<rt>にほんご</rt></ruby>の<ruby>学習<rt>がくしゅう</rt></ruby>をしましょうか？<ruby>教案<rt>きょうあん</rt></ruby>に<ruby>基<rt>もと</rt></ruby>づいた<ruby>特別<rt>とくべつ</rt></ruby>なレッスンを<ruby>始<rt>はじ</rt></ruby>めましょう！' }
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -102,8 +104,17 @@ const Tutor = ({ userPlan }) => {
                         <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: msg.role === 'user' ? '#9333ea' : 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', flexShrink: 0 }}>
                             {msg.role === 'user' ? <User size={18} /> : <MessageCircle size={18} />}
                         </div>
-                        <div style={{ padding: '12px 16px', borderRadius: '16px', background: msg.role === 'user' ? 'white' : 'white', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', color: '#2d3748', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
-                            {msg.content}
+                        <div style={{ padding: '12px 16px', borderRadius: '16px', background: msg.role === 'user' ? 'white' : 'white', border: '1px solid #e2e8f0', boxShadow: '0 2px 4px rgba(0,0,0,0.02)', color: '#2d3748', lineHeight: '1.8' }}>
+                            {msg.role === 'assistant' ? (
+                                <ReactMarkdown 
+                                    rehypePlugins={[rehypeRaw]}
+                                    className="react-markdown"
+                                >
+                                    {msg.content}
+                                </ReactMarkdown>
+                            ) : (
+                                <div style={{ whiteSpace: 'pre-wrap' }}>{msg.content}</div>
+                            )}
                         </div>
                     </div>
                 ))}
