@@ -10,6 +10,7 @@ import ResetPassword from './pages/ResetPassword';
 import AdminDashboard from './pages/AdminDashboard';
 import Tutor from './pages/Tutor';
 import Landing from './pages/Landing';
+import Inquiry from './pages/Inquiry';
 import './App.css';
 
 // Simple Nav Component
@@ -122,6 +123,7 @@ function App() {
       {!token ? (
         <Routes>
           <Route path="/" element={<Landing />} />
+          <Route path="/inquiry" element={<Inquiry />} />
           <Route path="/auth" element={
             <div className="min-h-screen bg-[#0f172a] flex justify-center items-center p-6 relative overflow-hidden">
               <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/10 blur-[120px] rounded-full"></div>

@@ -15,6 +15,10 @@ from prompts import get_quiz_prompt, get_aki_style_prompt
 
 from routers import wallet, materials, auth, tutor
 from routers.auth import get_current_user
+from usage_utils import check_and_increment_usage
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import config
 from pdf_utils import get_random_page_image
 from pdf_context import load_context_for_level
@@ -79,6 +83,12 @@ class MockTestRequest(BaseModel):
     level: str
     model: str = "gpt-4o"
     api_key: str = ""
+
+class InquiryRequest(BaseModel):
+    name: str
+    email: str
+    subject: str
+    message: str
 
 def get_openai_client():
     cfg = config.get_config()
@@ -188,6 +198,10 @@ import rag_utils # Import the RAG module
 
 @app.post("/generate")
 async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_current_user)):
+    # Standard Plan Limit: 4 rounds total per day (合算)
+    check_and_increment_usage(current_user["id"], current_user.get("plan_type", "standard"))
+
+    # Block advanced features for standard users
     # Block advanced features for standard users
     if req.mode in ["mock_test", "all_items"] and current_user.get("plan_type", "standard") == "standard":
         raise HTTPException(status_code=403, detail="Standardプランではこの機能は利用できません。Proプラン以上へアップグレードしてください。")
@@ -542,6 +556,41 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
     except Exception as e:
         print(f"Mock Test Error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/inquiry")
+async def send_inquiry(req: InquiryRequest):
+    recipient = os.getenv("INQUIRY_RECIPIENT_EMAIL", "aki.t901@gmail.com")
+    smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
+    smtp_port = int(os.getenv("SMTP_PORT", "587"))
+    smtp_user = os.getenv("SMTP_USER")
+    smtp_pass = os.getenv("SMTP_PASS")
+    
+    if not smtp_user or not smtp_pass:
+        # Fallback to logging if SMTP not configured yet
+        print(f"\n[INQUIRY LOG] From: {req.email} ({req.name})")
+        print(f"Subject: {req.subject}")
+        print(f"Message: {req.message}\n")
+        return {"message": "お問い合わせを送信しました（管理者ログに記録）"}
+
+    try:
+        msg = MIMEMultipart()
+        msg['From'] = smtp_user
+        msg['To'] = recipient
+        msg['Subject'] = f"[Verba Inquiry] {req.subject}"
+        
+        body = f"Name: {req.name}\nEmail: {req.email}\n\nMessage:\n{req.message}"
+        msg.attach(MIMEText(body, 'plain'))
+        
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(smtp_user, smtp_pass)
+        server.send_message(msg)
+        server.quit()
+        
+        return {"message": "お問い合わせを送信しました。"}
+    except Exception as e:
+        print(f"Inquiry Email Error: {e}")
+        raise HTTPException(status_code=500, detail="メールの送信に失敗しました。")
 
 if __name__ == "__main__":
     import uvicorn

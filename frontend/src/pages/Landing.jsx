@@ -308,7 +308,7 @@ const Landing = () => {
                     </li>
                   </ul>
                    <PayPalButton 
-                     amount="30.00" 
+                     amount="109.99" 
                      plan="founder" 
                      onSuccess={handlePaymentSuccess} 
                    />
@@ -331,7 +331,7 @@ const Landing = () => {
           <div className="flex gap-8 text-slate-500 text-sm font-medium">
              <a href="#" className="hover:text-white transition-colors">Twitter</a>
              <a href="#" className="hover:text-white transition-colors">Discord</a>
-             <a href="#" className="hover:text-white transition-colors">Contact</a>
+             <Link to="/inquiry" className="hover:text-white transition-colors">Contact</Link>
              <a href="#" className="hover:text-white transition-colors">Privacy</a>
           </div>
           <p className="text-slate-600 text-xs tracking-widest">© 2026 VERBA TECHNOLOGIES. ALL RIGHTS RESERVED.</p>

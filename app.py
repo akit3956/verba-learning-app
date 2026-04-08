@@ -76,7 +76,7 @@ st.divider()
 
 # Roadmap Section
 st.subheader("🗺️ Roadmap: The Future We Build")
-st.write("Your support ($30) will be the driving force of this journey.")
+st.write("Your support ($109.99) will be the driving force of this journey.")
 
 col1, col2, col3, col4 = st.columns(4)
 with col1:
@@ -175,17 +175,14 @@ def render_paypal_button(container_id, amount, plan_name, redirect_url):
 
 with col_std:
     st.markdown("### 🥉 Standard")
-    st.markdown("**( $4.99 / Month )**")
+    st.markdown("**( Free )**")
     st.markdown("""
-    - ✅ Basic features only
-    - ✅ Daily Quizzes & Practice
+    - ✅ 10 High-Quality Quizzes / day
+    - ✅ **Total 4 Rounds / day** across all features
     - 🔒 Mock Exams & Premium Content Locked
     """)
     st.markdown("<br>", unsafe_allow_html=True)
-    if agree:
-        render_paypal_button("paypal-btn-std", "4.99", "standard", "Register?payment=success&plan=standard")
-    else:
-        st.button("Pay with PayPal", key="disabled-std", disabled=True)
+    st.link_button("Start for Free 👉", "/auth" if "localhost" in st.query_params.get("host", [""])[0] else "https://verba-learning-app.vercel.app/auth")
 
 with col_pro:
     st.markdown("### 🥈 Pro")
@@ -203,15 +200,15 @@ with col_pro:
 
 with col_founder:
     st.markdown("### 🥇 Founder's Club")
-    st.markdown("**( $30.00 / One-time )**")
-    st.warning("Limited Offer (100 spots only)")
+    st.markdown("**( $109.99 / Year )**")
+    st.warning("Limited (100 spots only)")
     st.markdown("""
-    - ✅ **Lifetime access to all features**
+    - ✅ **Aki's Legacy Backer Status**
     - ✅ **10,000 VRB Early-bird Bonus**
     - ✅ Exclusive Discord Access
     """)
     if agree:
-        render_paypal_button("paypal-btn-founder", "30.00", "founder", "Register?payment=success&plan=founder")
+        render_paypal_button("paypal-btn-founder", "109.99", "founder", "Register?payment=success&plan=founder")
     else:
         st.button("Pay with PayPal", key="disabled-founder", disabled=True)
 

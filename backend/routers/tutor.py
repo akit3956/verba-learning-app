@@ -7,6 +7,8 @@ from rag_utils import search_teacher_notes, format_teacher_notes
 from prompts import get_tutor_system_prompt
 import config
 
+from usage_utils import check_and_increment_usage
+
 router = APIRouter(prefix="/api/tutor", tags=["tutor"])
 
 class ChatRequest(BaseModel):
@@ -15,9 +17,8 @@ class ChatRequest(BaseModel):
 
 @router.post("/chat")
 async def tutor_chat(req: ChatRequest, current_user: dict = Depends(get_current_user)):
-    # Block feature for standard users
-    if current_user.get("plan_type", "standard") == "standard":
-        raise HTTPException(status_code=403, detail="StandardプランではAIチューター機能は利用できません。Proプラン以上へアップグレードしてください。")
+    # Standard Plan Limit: 4 rounds total per day
+    check_and_increment_usage(current_user["id"], current_user.get("plan_type", "standard"))
 
     # 1. Search for relevant teacher notes (RAG)
     context_chunks = search_teacher_notes(req.message)

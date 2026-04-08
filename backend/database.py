@@ -32,7 +32,20 @@ def init_db():
             vrb_balance INTEGER DEFAULT 0,
             nationality TEXT,
             plan_type TEXT DEFAULT 'standard',
+            registration_ip TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
+    # Daily Usage Table
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS daily_usage (
+            id SERIAL PRIMARY KEY,
+            user_id TEXT,
+            usage_date DATE DEFAULT CURRENT_DATE,
+            total_count INTEGER DEFAULT 0,
+            UNIQUE(user_id, usage_date),
+            FOREIGN KEY (user_id) REFERENCES users (id)
         )
     ''')
     
@@ -103,10 +116,17 @@ def init_db():
             conn.rollback()
             pass
             
-    # Check if plan_type exists
     if "plan_type" not in columns:
         try:
             c.execute("ALTER TABLE users ADD COLUMN plan_type TEXT DEFAULT 'standard'")
+        except Exception:
+            conn.rollback()
+            pass
+
+    # Check if registration_ip exists (Migration)
+    if "registration_ip" not in columns:
+        try:
+            c.execute("ALTER TABLE users ADD COLUMN registration_ip TEXT")
         except Exception:
             conn.rollback()
             pass
