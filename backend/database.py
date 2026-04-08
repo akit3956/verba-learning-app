@@ -15,7 +15,7 @@ DB_URL = os.getenv("DATABASE_URL")
 def get_db_connection():
     if not DB_URL:
         raise ValueError("DATABASE_URL is not set in .env")
-    conn = psycopg2.connect(DB_URL)
+    conn = psycopg2.connect(DB_URL, connect_timeout=5)
     return conn
 
 def init_db():

@@ -8,7 +8,12 @@ def get_db_connection():
     DB_URL = os.getenv("DATABASE_URL")
     if not DB_URL:
         return None
-    return psycopg2.connect(DB_URL)
+    try:
+        conn = psycopg2.connect(DB_URL, connect_timeout=5)
+        return conn
+    except Exception as e:
+        print(f"CRITICAL: Failed to connect to database in config.py: {e}")
+        return None
 
 def load_config():
     # Initial defaults from ENV

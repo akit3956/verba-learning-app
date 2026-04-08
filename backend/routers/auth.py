@@ -113,7 +113,7 @@ async def register(user: UserCreate, request: Request):
         conn.close()
         raise HTTPException(status_code=400, detail="Email already registered")
         
-    client_ip = request.client.host
+    client_ip = request.client.host if request.client else "0.0.0.0"
     
     # Anti-Multi-Account: Max 2 accounts per IP
     c.execute("SELECT COUNT(*) FROM users WHERE registration_ip = %s", (client_ip,))
