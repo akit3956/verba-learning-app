@@ -11,6 +11,10 @@ def check_and_increment_usage(user_id: str, plan_type: str, limit: int = 4):
         return True # Unlimited for Pro/Founder
     
     conn = get_db_connection()
+    if not conn:
+        print("Warning: Skipping usage tracking because database is unreachable.")
+        return True # Fail open
+
     c = conn.cursor()
     today = date.today()
     
