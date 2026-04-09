@@ -102,48 +102,56 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 
 @router.post("/register", response_model=Token)
 async def register(user: UserCreate, request: Request):
-    conn = get_db_connection()
-    c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    
-    # Check if username exists
-    c.execute("SELECT * FROM users WHERE email = %s", (user.email,))
-    existing = c.fetchone()
-    if existing:
-        c.close()
-        conn.close()
-        raise HTTPException(status_code=400, detail="Email already registered")
-        
-    client_ip = request.client.host if request.client else "0.0.0.0"
-    
-    # Anti-Multi-Account: Max 2 accounts per IP
-    c.execute("SELECT COUNT(*) FROM users WHERE registration_ip = %s", (client_ip,))
-    ip_count = c.fetchone()[0]
-    if ip_count >= 2:
-        c.close()
-        conn.close()
-        raise HTTPException(status_code=400, detail="同じ端末（IP）から登録できるアカウント数の上限に達しました。")
+    try:
+        conn = get_db_connection()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="データベースに接続できません。少し時間を置いてから再試行してください。"
+        )
 
-    # Founder's Cap: Max 100 users
-    plan_type = "founder" if user.is_founder else user.plan_type
-    if plan_type == "founder":
-        c.execute("SELECT COUNT(*) FROM users WHERE plan_type = 'founder'")
-        founder_count = c.fetchone()[0]
-        if founder_count >= 100:
+    try:
+        c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        
+        # Check if email exists
+        c.execute("SELECT id FROM users WHERE email = %s", (user.email,))
+        if c.fetchone():
             c.close()
             conn.close()
-            raise HTTPException(status_code=403, detail="Founder's Passは完売いたしました。StandardまたはProプランをご利用ください。")
+            raise HTTPException(status_code=400, detail="Email already registered")
+            
+        client_ip = request.client.host if request.client else "0.0.0.0"
+        
+        # Anti-Multi-Account: Max 2 accounts per IP
+        c.execute("SELECT COUNT(*) FROM users WHERE registration_ip = %s", (client_ip,))
+        ip_count = c.fetchone()[0]
+        if ip_count >= 2:
+            c.close()
+            conn.close()
+            raise HTTPException(status_code=400, detail="同じ端末（IP）から登録できるアカウント数の上限に達しました。")
 
-    user_id = str(uuid.uuid4())
-    hashed_password = get_password_hash(user.password)
-    initial_bonus = 10000 if plan_type == 'founder' else 0
-    
-    try:
+        # Founder's Cap: Max 100 users
+        plan_type = "founder" if user.is_founder else user.plan_type
+        if plan_type == "founder":
+            c.execute("SELECT COUNT(*) FROM users WHERE plan_type = 'founder'")
+            founder_count = c.fetchone()[0]
+            if founder_count >= 100:
+                c.close()
+                conn.close()
+                raise HTTPException(status_code=403, detail="Founder's Passは完売いたしました。StandardまたはProプランをご利用ください。")
+
+        user_id = str(uuid.uuid4())
+        hashed_password = get_password_hash(user.password)
+        initial_bonus = 10000 if plan_type == 'founder' else 0
+        
         c.execute("INSERT INTO users (id, email, username, password_hash, vrb_balance, plan_type, registration_ip) VALUES (%s, %s, %s, %s, %s, %s, %s)",
                   (user_id, user.email, user.username, hashed_password, initial_bonus, plan_type, client_ip))
         conn.commit()
+    except HTTPException:
+        raise
     except Exception as e:
-        conn.close()
-        raise HTTPException(status_code=500, detail="Registration failed")
+        print(f"Registration Error: {e}")
+        raise HTTPException(status_code=500, detail="登録処理に失敗しました。データベースの状態を確認してください。")
     finally:
         c.close()
         conn.close()
@@ -156,12 +164,24 @@ async def register(user: UserCreate, request: Request):
 
 @router.post("/login", response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    conn = get_db_connection()
-    c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    c.execute("SELECT * FROM users WHERE email = %s", (form_data.username,))
-    user = c.fetchone()
-    c.close()
-    conn.close()
+    try:
+        conn = get_db_connection()
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="データベースに接続できません。しばらくしてからもう一度お試しください。"
+        )
+
+    try:
+        c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+        c.execute("SELECT * FROM users WHERE email = %s", (form_data.username,))
+        user = c.fetchone()
+        c.close()
+        conn.close()
+    except Exception as e:
+        print(f"Login Error: {e}")
+        conn.close()
+        raise HTTPException(status_code=500, detail="ログイン処理中にエラーが発生しました。")
     
     if not user or not verify_password(form_data.password, user["password_hash"]):
         raise HTTPException(

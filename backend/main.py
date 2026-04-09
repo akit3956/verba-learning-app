@@ -134,6 +134,16 @@ async def update_config_endpoint(update: ConfigUpdate):
     
     return {"message": "Config updated", "config": await get_config_endpoint()}
 
+@app.get("/api/health")
+async def health_check():
+    from database import get_db_connection
+    try:
+        conn = get_db_connection()
+        conn.close()
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "database": f"error: {str(e)}"}
+
 @app.get("/diagnostic/api-key")
 async def diagnostic_api_key():
     # Helper to mask the key
