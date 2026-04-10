@@ -61,6 +61,7 @@ const Landing = () => {
           </span>
         </div>
         <div className="flex items-center gap-6">
+          <Link to="/inquiry" className="text-sm font-medium hover:text-white transition-colors">Contact</Link>
           <Link to="/auth" className="text-sm font-medium hover:text-white transition-colors">Log In</Link>
           <Link 
             to="/auth" 
@@ -98,7 +99,14 @@ const Landing = () => {
             Start Learning for Free
             <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
-          <div className="flex -space-x-3 items-center">
+          <Link 
+            to="/inquiry" 
+            className="px-8 py-4 bg-white/5 border border-white/10 text-white rounded-2xl font-bold text-lg hover:bg-white/10 transition-all"
+          >
+            Contact Founder
+          </Link>
+        </div>
+        <div className="flex -space-x-3 items-center mt-8">
             {[1, 2, 3, 4].map(i => (
               <div key={i} className="w-10 h-10 rounded-full border-2 border-[#0f172a] bg-slate-800 overflow-hidden">
                 <img src={`https://i.pravatar.cc/100?u=user${i}`} alt="user" />

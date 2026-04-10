@@ -14,6 +14,7 @@ import hashlib
 
 # Re-use from database.py
 from database import get_db_connection
+from usage_utils import get_usage_count
 
 # Settings for JWT
 SECRET_KEY = os.getenv("SECRET_KEY", "your-super-secret-key-change-in-production")
@@ -204,6 +205,15 @@ async def read_users_me(current_user: dict = Depends(get_current_user)):
         vrb_balance=current_user["vrb_balance"],
         plan_type=current_user.get("plan_type", "standard")
     )
+
+@router.get("/usage")
+async def get_user_usage(current_user: dict = Depends(get_current_user)):
+    count = get_usage_count(current_user["id"])
+    return {
+        "count": count,
+        "limit": 4, # Standard limit
+        "plan_type": current_user.get("plan_type", "standard")
+    }
 
 @router.post("/forgot-password")
 async def forgot_password(request: ForgotPasswordRequest):

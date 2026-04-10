@@ -14,7 +14,7 @@ import Inquiry from './pages/Inquiry';
 import './App.css';
 
 // Simple Nav Component
-function NavBar({ onLogout, userPlan }) {
+function NavBar({ onLogout, userPlan, usage }) {
   const location = useLocation();
   const getLinkStyle = (path) => {
     return location.pathname === path ? 'nav-item active' : 'nav-item';
@@ -55,9 +55,17 @@ function NavBar({ onLogout, userPlan }) {
             <LayoutDashboard size={20} /> Admin
           </Link>
         )}
+        <Link to="/inquiry" className={getLinkStyle('/inquiry')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
+          <MessageCircle size={20} /> Contact
+        </Link>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+        {usage && userPlan === 'standard' && (
+          <div style={{ fontSize: '12px', color: '#718096', fontWeight: 'bold' }}>
+            Daily Rounds: {usage.count} / {usage.limit}
+          </div>
+        )}
         <span style={{ fontSize: '12px', color: '#a0aec0', background: '#f8fafc', padding: '4px 8px', borderRadius: '4px' }}>
           Plan: {userPlan}
         </span>
@@ -88,6 +96,7 @@ function NavBar({ onLogout, userPlan }) {
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
   const [userPlan, setUserPlan] = useState('standard');
+  const [usage, setUsage] = useState(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -104,7 +113,26 @@ function App() {
         console.error("Failed to fetch plan:", err);
       }
     };
+    const fetchUsage = async () => {
+      if (!token) return;
+      try {
+        const res = await fetch(API_BASE_URL + '/auth/usage', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUsage(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch usage:", err);
+      }
+    };
     fetchUser();
+    fetchUsage();
+    
+    // Refresh usage occasionally
+    const interval = setInterval(fetchUsage, 60000); 
+    return () => clearInterval(interval);
   }, [token]);
 
   const handleLogin = (newToken) => {
@@ -138,7 +166,7 @@ function App() {
         </Routes>
       ) : (
         <div className="container">
-          <NavBar onLogout={handleLogout} userPlan={userPlan} />
+          <NavBar onLogout={handleLogout} userPlan={userPlan} usage={usage} />
           <div className="content-wrapper">
             <Routes>
               <Route path="/" element={<Quiz userPlan={userPlan} />} />

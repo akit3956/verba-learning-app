@@ -131,6 +131,13 @@ const Tutor = ({ userPlan }) => {
                 <div ref={messagesEndRef} />
             </div>
 
+            {/* AI Disclaimer */}
+            <div style={{ padding: '8px 20px', background: '#fff', borderTop: '1px solid #f1f5f9', textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>
+                    ※ ミス・キャプランはAIであり、時として不正確な情報を生成することがあります。重要な学習内容は公式教材も併せて確認してください。
+                </p>
+            </div>
+
             <form onSubmit={handleSend} style={{ padding: '20px', background: 'white', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '10px' }}>
                 <input
                     type="text"

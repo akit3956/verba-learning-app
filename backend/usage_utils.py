@@ -51,3 +51,20 @@ def check_and_increment_usage(user_id: str, plan_type: str, limit: int = 4):
     finally:
         c.close()
         conn.close()
+
+def get_usage_count(user_id: str):
+    """Retrieves the current daily usage count for a user."""
+    conn = get_db_connection()
+    if not conn:
+        return 0
+    c = conn.cursor()
+    today = date.today()
+    try:
+        c.execute("SELECT total_count FROM daily_usage WHERE user_id = %s AND usage_date = %s", (user_id, today))
+        row = c.fetchone()
+        return row[0] if row else 0
+    except Exception:
+        return 0
+    finally:
+        c.close()
+        conn.close()
