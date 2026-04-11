@@ -289,22 +289,6 @@ function Quiz({ userPlan }) {
                         </select>
                     </div>
 
-                    <div style={{ marginBottom: '2rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Options</label>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <input
-                                type="checkbox"
-                                id="visual-hint"
-                                checked={includeImage}
-                                onChange={(e) => setIncludeImage(e.target.checked)}
-                                style={{ transform: 'scale(1.2)' }}
-                            />
-                            <label htmlFor="visual-hint" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                                <Sparkles size={16} style={{ marginRight: 5, color: '#f59e0b' }} />
-                                Visual Hints (画像ヒントを表示) <span style={{ fontSize: '0.8em', color: '#666', marginLeft: 5 }}>※生成に時間がかかります</span>
-                            </label>
-                        </div>
-                    </div>
 
                     <button
                         className="generate-btn"
