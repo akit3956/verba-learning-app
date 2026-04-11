@@ -11,6 +11,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import Tutor from './pages/Tutor';
 import Landing from './pages/Landing';
 import Inquiry from './pages/Inquiry';
+import Upgrade from './pages/Upgrade';
 import './App.css';
 
 // Simple Nav Component
@@ -65,7 +66,7 @@ function NavBar({ onLogout, userPlan, usage }) {
           </div>
         )}
         {userPlan?.toLowerCase() === 'standard' && (
-          <Link to="/inquiry" style={{
+          <Link to="/upgrade" style={{
             fontSize: '12px',
             color: '#b7791f',
             background: '#faf089',
@@ -186,6 +187,7 @@ function App() {
               <Route path="/" element={<Quiz userPlan={userPlan} onUsageUpdate={fetchUsage} />} />
               <Route path="/generator" element={<MaterialGenerator userPlan={userPlan} />} />
               <Route path="/wallet" element={<Wallet />} />
+              <Route path="/upgrade" element={<Upgrade />} />
               <Route path="/tutor" element={<Tutor userPlan={userPlan} onUsageUpdate={fetchUsage} />} />
               <Route path="/inquiry" element={<Inquiry />} />
               <Route path="/admin" element={<AdminDashboard />} />

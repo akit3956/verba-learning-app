@@ -16,6 +16,15 @@ class SpendRequest(BaseModel):
     amount: int
     description: str
 
+class PurchaseTokensRequest(BaseModel):
+    paypal_order_id: str
+    amount_usd: float
+    tokens_granted: int
+
+class UpgradePlanRequest(BaseModel):
+    paypal_order_id: str
+    plan_type: str
+
 @router.get("/balance", response_model=UserBalance)
 async def get_balance(current_user: dict = Depends(get_current_user)):
     user_id = current_user["id"]
@@ -175,3 +184,59 @@ async def transfer_tokens(req: TransferRequest, current_user: dict = Depends(get
         "sender_new_balance": new_sender_bal,
         "receiver_new_balance": new_receiver_bal
     }
+
+@router.post("/purchase-tokens")
+async def purchase_tokens(req: PurchaseTokensRequest, current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
+    conn = get_db_connection()
+    c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    # Check user
+    c.execute("SELECT vrb_balance FROM users WHERE id = %s", (user_id,))
+    user = c.fetchone()
+    if not user:
+        c.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    new_balance = user["vrb_balance"] + req.tokens_granted
+    
+    # Update balance
+    c.execute("UPDATE users SET vrb_balance = %s WHERE id = %s", (new_balance, user_id))
+    
+    # Log transaction
+    c.execute("INSERT INTO transactions (user_id, amount, type, description) VALUES (%s, %s, %s, %s)",
+              (user_id, req.tokens_granted, 'reward', f"Purchased {req.tokens_granted} VRB (Order ID: {req.paypal_order_id})"))
+              
+    conn.commit()
+    c.close()
+    conn.close()
+    
+    return {"status": "success", "new_balance": new_balance}
+
+@router.post("/upgrade-plan")
+async def upgrade_plan(req: UpgradePlanRequest, current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
+    
+    if req.plan_type not in ["pro", "founder"]:
+        raise HTTPException(status_code=400, detail="Invalid plan type requested for upgrade.")
+        
+    conn = get_db_connection()
+    c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    # Update plan
+    c.execute("UPDATE users SET plan_type = %s WHERE id = %s RETURNING plan_type", (req.plan_type, user_id))
+    updated_user = c.fetchone()
+    
+    if not updated_user:
+        conn.rollback()
+        c.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="User not found for plan upgrade.")
+        
+    conn.commit()
+    c.close()
+    conn.close()
+    
+    return {"status": "success", "new_plan": updated_user["plan_type"]}
+
