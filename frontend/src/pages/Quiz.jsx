@@ -155,40 +155,32 @@ function Quiz({ userPlan, onUsageUpdate }) {
             updated[currentIndex] = newResult;
             return updated;
         });
-    };
 
-    const handleFinish = async () => {
-        // Calculate reward
-        const correctCount = results.filter(r => r.isCorrect).length;
-        // Bonus for current answer if it's the last one and correct (handleNext handles index increment, but for the last one we need to be careful)
-        // Actually results are updated in handleAnswer.
-
-        // Since handleNext calls this when index is at end, 'results' contains all answers?
-        // Wait, handleNext is called AFTER answering.
-        // So results SHOULD be full.
-
-        const rewardPerQuestion = 1;
-        const totalReward = correctCount * rewardPerQuestion;
-
-        if (totalReward > 0) {
+        // Grant reward immediately if correct
+        if (isCorrect) {
+            const rewardPerQuestion = 1;
             try {
                 const token = localStorage.getItem('token');
-                await fetch(API_BASE_URL + '/api/wallet/reward', {
+                fetch(API_BASE_URL + '/api/wallet/reward', {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        amount: totalReward,
+                        amount: rewardPerQuestion,
                         description: `Quiz Reward: ${category} ${level}`
                     })
                 });
-                setEarnedToken(totalReward);
+                setEarnedToken(prev => prev + rewardPerQuestion);
             } catch (e) {
-                console.error("Reward failed", e);
+                console.error("Instant reward failed", e);
             }
         }
+    };
+
+    const handleFinish = async () => {
+        // Reward is now calculated immediately when answering correctly.
         setShowResults(true);
     };
 
