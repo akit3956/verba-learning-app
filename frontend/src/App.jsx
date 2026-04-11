@@ -42,11 +42,9 @@ function NavBar({ onLogout, userPlan, usage }) {
             <PenTool size={20} /> Teacher Tools
           </Link>
         )}
-        {!isStandard && (
-          <Link to="/tutor" className={getLinkStyle('/tutor')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
-            <MessageCircle size={20} /> AI Tutor
-          </Link>
-        )}
+        <Link to="/tutor" className={getLinkStyle('/tutor')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
+          <MessageCircle size={20} /> AI Tutor
+        </Link>
         <Link to="/wallet" className={getLinkStyle('/wallet')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
           <WalletIcon size={20} /> Wallet
         </Link>
@@ -174,6 +172,7 @@ function App() {
               <Route path="/generator" element={<MaterialGenerator userPlan={userPlan} />} />
               <Route path="/wallet" element={<Wallet />} />
               <Route path="/tutor" element={<Tutor userPlan={userPlan} onUsageUpdate={fetchUsage} />} />
+              <Route path="/inquiry" element={<Inquiry />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
