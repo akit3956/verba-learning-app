@@ -4,7 +4,7 @@ import rehypeRaw from 'rehype-raw';
 import API_BASE_URL from "../api_config";
 import { Send, User, MessageCircle, RefreshCw, BookOpen } from 'lucide-react';
 
-const Tutor = ({ userPlan }) => {
+const Tutor = ({ userPlan, onUsageUpdate }) => {
     const [messages, setMessages] = useState([
         { role: 'assistant', content: '<ruby>初<rt>はじ</rt></ruby>めまして、ミス・キャプラン（Miss Kaplan）です。<ruby>今日<rt>きょう</rt></ruby>はどのような<ruby>日本語<rt>にほんご</rt></ruby>の<ruby>学習<rt>がくしゅう</rt></ruby>をしましょうか？<ruby>教案<rt>きょうあん</rt></ruby>に<ruby>基<rt>もと</rt></ruby>づいた<ruby>特別<rt>とくべつ</rt></ruby>なレッスンを<ruby>始<rt>はじ</rt></ruby>めましょう！' }
     ]);
@@ -48,6 +48,7 @@ const Tutor = ({ userPlan }) => {
             const data = await response.json();
 
             setMessages(prev => [...prev, { role: 'assistant', content: data.reply }]);
+            if (onUsageUpdate) onUsageUpdate();
         } catch (err) {
             console.error(err);
             setMessages(prev => [...prev, { role: 'assistant', content: `エラーが発生しました: ${err.message}` }]);

@@ -5,7 +5,7 @@ import QuestionCard from '../components/QuestionCard';
 import ResultSummary from '../components/ResultSummary';
 
 
-function Quiz({ userPlan }) {
+function Quiz({ userPlan, onUsageUpdate }) {
     const [level, setLevel] = useState('N4');
     const [category, setCategory] = useState('grammar');
     const [mode, setMode] = useState('single');
@@ -85,6 +85,7 @@ function Quiz({ userPlan }) {
 
             setPdfImage(data.image_base64);
             setQuestionQueue(data.questions); // questions is a list of {question, options, answer...}
+            if (onUsageUpdate) onUsageUpdate();
 
         } catch (err) {
             setError('模擬試験の生成に失敗しました: ' + err.message);
@@ -126,6 +127,7 @@ function Quiz({ userPlan }) {
             const data = await response.json();
 
             setQuestionQueue(data);
+            if (onUsageUpdate) onUsageUpdate();
         } catch (err) {
             setError(err.message || '問題の生成に失敗しました。サーバーを確認してください。');
             console.error(err);

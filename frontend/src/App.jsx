@@ -98,6 +98,21 @@ function App() {
   const [userPlan, setUserPlan] = useState('standard');
   const [usage, setUsage] = useState(null);
 
+  const fetchUsage = React.useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(API_BASE_URL + '/auth/usage', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setUsage(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch usage:", err);
+    }
+  }, [token]);
+
   useEffect(() => {
     const fetchUser = async () => {
       if (!token) return;
@@ -113,27 +128,13 @@ function App() {
         console.error("Failed to fetch plan:", err);
       }
     };
-    const fetchUsage = async () => {
-      if (!token) return;
-      try {
-        const res = await fetch(API_BASE_URL + '/auth/usage', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUsage(data);
-        }
-      } catch (err) {
-        console.error("Failed to fetch usage:", err);
-      }
-    };
     fetchUser();
     fetchUsage();
     
     // Refresh usage occasionally
     const interval = setInterval(fetchUsage, 60000); 
     return () => clearInterval(interval);
-  }, [token]);
+  }, [token, fetchUsage]);
 
   const handleLogin = (newToken) => {
     setToken(newToken);
@@ -169,10 +170,10 @@ function App() {
           <NavBar onLogout={handleLogout} userPlan={userPlan} usage={usage} />
           <div className="content-wrapper">
             <Routes>
-              <Route path="/" element={<Quiz userPlan={userPlan} />} />
+              <Route path="/" element={<Quiz userPlan={userPlan} onUsageUpdate={fetchUsage} />} />
               <Route path="/generator" element={<MaterialGenerator userPlan={userPlan} />} />
               <Route path="/wallet" element={<Wallet />} />
-              <Route path="/tutor" element={<Tutor userPlan={userPlan} />} />
+              <Route path="/tutor" element={<Tutor userPlan={userPlan} onUsageUpdate={fetchUsage} />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
