@@ -20,26 +20,6 @@ const Tutor = ({ userPlan }) => {
         scrollToBottom();
     }, [messages]);
 
-    const [diagInfo, setDiagInfo] = useState(null);
-    const [showDiag, setShowDiag] = useState(false);
-
-    useEffect(() => {
-        const fetchDiag = async () => {
-            try {
-                const token = localStorage.getItem('token');
-                const res = await fetch(`${API_BASE_URL}/diagnostic/api-key`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    setDiagInfo(data);
-                }
-            } catch (e) {
-                console.error("Diag fetch failed", e);
-            }
-        };
-        fetchDiag();
-    }, []);
 
     const handleSend = async (e) => {
         e.preventDefault();
@@ -83,19 +63,11 @@ const Tutor = ({ userPlan }) => {
                     <BookOpen size={24} />
                     <div>
                         <h2 style={{ margin: 0, fontSize: '1.2rem' }}>ミス・キャプランのAI教室</h2>
-                        <p 
-                            onClick={() => setShowDiag(!showDiag)} 
-                            style={{ margin: 0, fontSize: '0.8rem', opacity: 0.9, cursor: 'pointer' }}
-                        >
-                            教案RAGシステム: 高精度・プロのメソッド {showDiag ? '▲' : '▼'}
+                        <p style={{ margin: 0, fontSize: '0.8rem', opacity: 0.9 }}>
+                            教案RAGシステム: 高精度・プロのメソッド
                         </p>
                     </div>
                 </div>
-                {showDiag && diagInfo && (
-                    <div style={{ fontSize: '0.7rem', background: 'rgba(0,0,0,0.2)', padding: '4px 8px', borderRadius: '4px' }}>
-                        API Key: {diagInfo.masked_key} | Source: {diagInfo.source}
-                    </div>
-                )}
             </div>
 
             <div className="chat-messages" style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', background: '#f9f9fb' }}>

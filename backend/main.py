@@ -144,32 +144,7 @@ async def health_check():
     except Exception as e:
         return {"status": "unhealthy", "database": f"error: {str(e)}"}
 
-@app.get("/diagnostic/api-key")
-async def diagnostic_api_key():
-    # Helper to mask the key
-    def mask_key(key: str) -> str:
-        if not key: return "N/A"
-        if len(key) > 12:
-            return f"{key[:8]}...{key[-4:]}"
-        return "****"
 
-    # Check multiple sources
-    cfg = config.get_config()
-    db_key = cfg.get("openai_api_key")
-    env_key = os.getenv("OPENAI_API_KEY")
-    
-    # Priority used in the app
-    active_key = db_key or env_key
-    
-    source = "Database" if db_key else "Environment"
-    if not active_key: source = "None"
-
-    return {
-        "masked_key": mask_key(active_key),
-        "source": source,
-        "env_present": bool(env_key),
-        "db_present": bool(db_key)
-    }
 
 @app.get("/config/test")
 async def test_api_config(current_user: dict = Depends(get_current_user)):
