@@ -64,6 +64,21 @@ function NavBar({ onLogout, userPlan, usage }) {
             Daily Rounds: {usage.count} / {usage.limit}
           </div>
         )}
+        {userPlan?.toLowerCase() === 'standard' && (
+          <Link to="/inquiry" style={{
+            fontSize: '12px',
+            color: '#b7791f',
+            background: '#faf089',
+            padding: '4px 12px',
+            borderRadius: '20px',
+            fontWeight: 'bold',
+            textDecoration: 'none',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.05)',
+            border: '1px solid #f6e05e'
+          }}>
+            ✨ Upgrade
+          </Link>
+        )}
         <span style={{ fontSize: '12px', color: '#a0aec0', background: '#f8fafc', padding: '4px 8px', borderRadius: '4px' }}>
           Plan: {userPlan}
         </span>
