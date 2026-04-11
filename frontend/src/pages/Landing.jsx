@@ -114,7 +114,6 @@ const Landing = () => {
             ))}
             <span className="ml-4 text-sm text-slate-500 font-medium">+10k learners</span>
           </div>
-        </div>
 
         {/* Aki Avatar Welcome */}
         <div className="mt-20 relative group">
