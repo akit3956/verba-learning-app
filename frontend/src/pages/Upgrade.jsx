@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles, Check, Star, Zap, Shield, AlertCircle } from 'lucide-react';
+import { Sparkles, Check, Star, Zap, Shield, AlertCircle, MessageCircle } from 'lucide-react';
 import API_BASE_URL from "../api_config";
 
 const PayPalButton = ({ amount, onApprove, onError }) => {
