@@ -12,6 +12,7 @@ import Tutor from './pages/Tutor';
 import Landing from './pages/Landing';
 import Inquiry from './pages/Inquiry';
 import Upgrade from './pages/Upgrade';
+import Terms from './pages/Terms';
 import './App.css';
 
 // Simple Nav Component
@@ -177,6 +178,7 @@ function App() {
             </div>
           } />
           <Route path="/reset-password/:token" element={<ResetPassword />} />
+          <Route path="/terms" element={<Terms />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       ) : (
@@ -191,6 +193,7 @@ function App() {
               <Route path="/tutor" element={<Tutor userPlan={userPlan} onUsageUpdate={fetchUsage} />} />
               <Route path="/inquiry" element={<Inquiry />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/terms" element={<Terms />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>

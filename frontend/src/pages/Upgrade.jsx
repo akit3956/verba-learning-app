@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Sparkles, Check, Star, Zap, Shield, AlertCircle, MessageCircle } from 'lucide-react';
 import API_BASE_URL from "../api_config";
 
@@ -46,7 +46,7 @@ const PayPalButton = ({ amount, onApprove, onError }) => {
 const Upgrade = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [successMessage, setSuccessMessage] = useState(null);
 
     const handleUpgradePro = async (details) => {
@@ -174,11 +174,36 @@ const Upgrade = () => {
                                 </li>
                             </ul>
                             
-                            <PayPalButton 
-                                amount="5.00" 
-                                onApprove={(details) => handlePurchaseVRB(details, 5.00, 500)} 
-                                onError={(err) => setError("PayPal transaction failed. Please try again.")}
-                            />
+                            <div className="mb-6">
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <div className="relative">
+                                        <input 
+                                            type="checkbox" 
+                                            className="peer sr-only" 
+                                            checked={agreedToTerms}
+                                            onChange={() => setAgreedToTerms(!agreedToTerms)}
+                                        />
+                                        <div className="w-5 h-5 border-2 border-slate-300 rounded peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all flex items-center justify-center">
+                                            <Check size={12} className={`text-white transition-opacity ${agreedToTerms ? 'opacity-100' : 'opacity-0'}`} />
+                                        </div>
+                                    </div>
+                                    <span className="text-xs font-medium text-slate-500 group-hover:text-slate-700">
+                                        I agree to the <Link to="/terms" target="_blank" className="underline text-emerald-600">Terms of Service</Link>
+                                    </span>
+                                </label>
+                            </div>
+
+                            {agreedToTerms ? (
+                                <PayPalButton 
+                                    amount="5.00" 
+                                    onApprove={(details) => handlePurchaseVRB(details, 5.00, 500)} 
+                                    onError={(err) => setError("PayPal transaction failed. Please try again.")}
+                                />
+                            ) : (
+                                <button className="w-full py-4 bg-slate-100 border border-slate-200 rounded-2xl text-slate-400 font-bold cursor-not-allowed opacity-70">
+                                    PayPal (Agree to terms)
+                                </button>
+                            )}
                         </div>
 
                         {/* Pro Upgrade Section */}
@@ -216,11 +241,35 @@ const Upgrade = () => {
                             </ul>
                             
                             <div className="relative z-10">
-                                <PayPalButton 
-                                    amount="12.99" 
-                                    onApprove={(details) => handleUpgradePro(details)} 
-                                    onError={(err) => setError("PayPal transaction failed. Please try again.")}
-                                />
+                                <div className="mb-6">
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <div className="relative">
+                                            <input 
+                                                type="checkbox" 
+                                                className="peer sr-only" 
+                                                checked={agreedToTerms}
+                                                onChange={() => setAgreedToTerms(!agreedToTerms)}
+                                            />
+                                            <div className="w-5 h-5 border-2 border-indigo-200 rounded peer-checked:bg-indigo-600 peer-checked:border-indigo-600 transition-all flex items-center justify-center">
+                                                <Check size={12} className={`text-white transition-opacity ${agreedToTerms ? 'opacity-100' : 'opacity-0'}`} />
+                                            </div>
+                                        </div>
+                                        <span className="text-xs font-medium text-slate-500 group-hover:text-slate-700">
+                                            I agree to the <Link to="/terms" target="_blank" className="underline text-indigo-600">Terms of Service</Link>
+                                        </span>
+                                    </label>
+                                </div>
+                                {agreedToTerms ? (
+                                    <PayPalButton 
+                                        amount="12.99" 
+                                        onApprove={(details) => handleUpgradePro(details)} 
+                                        onError={(err) => setError("PayPal transaction failed. Please try again.")}
+                                    />
+                                ) : (
+                                    <button className="w-full py-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl text-indigo-300 font-bold cursor-not-allowed">
+                                        PayPal (Agree to terms)
+                                    </button>
+                                )}
                             </div>
                         </div>
 

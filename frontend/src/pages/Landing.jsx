@@ -37,6 +37,7 @@ const PayPalButton = ({ amount, plan, onSuccess }) => {
 
 const Landing = () => {
   const navigate = useNavigate();
+  const [agreedToTerms, setAgreedToTerms] = React.useState(false);
 
   const handlePaymentSuccess = (plan) => {
     navigate(`/auth?payment=success&plan=${plan}`);
@@ -273,11 +274,35 @@ const Landing = () => {
                   1.5x VRB Token Boost
                 </li>
               </ul>
-               <PayPalButton 
-                 amount="12.99" 
-                 plan="pro" 
-                 onSuccess={handlePaymentSuccess} 
-               />
+               <div className="mb-6">
+                 <label className="flex items-center gap-3 cursor-pointer group">
+                   <div className="relative">
+                     <input 
+                       type="checkbox" 
+                       className="peer sr-only" 
+                       checked={agreedToTerms}
+                       onChange={() => setAgreedToTerms(!agreedToTerms)}
+                     />
+                     <div className="w-5 h-5 border-2 border-slate-600 rounded-md peer-checked:bg-blue-500 peer-checked:border-blue-500 transition-all flex items-center justify-center">
+                       <Check size={12} className={`text-white transition-opacity ${agreedToTerms ? 'opacity-100' : 'opacity-0'}`} />
+                     </div>
+                   </div>
+                   <span className="text-[10px] font-medium text-slate-400 group-hover:text-slate-300">
+                     I agree to the <Link to="/terms" target="_blank" className="underline hover:text-blue-400">Terms of Service</Link>
+                   </span>
+                 </label>
+               </div>
+               {agreedToTerms ? (
+                 <PayPalButton 
+                   amount="12.99" 
+                   plan="pro" 
+                   onSuccess={handlePaymentSuccess} 
+                 />
+               ) : (
+                 <button className="w-full py-4 bg-slate-800/50 border border-white/5 rounded-2xl text-slate-500 font-bold cursor-not-allowed opacity-50">
+                    PayPal (Agree to terms)
+                 </button>
+               )}
              </div>
 
             {/* Founder's Pass */}
@@ -314,11 +339,35 @@ const Landing = () => {
                       Founder's Club Discord VIP
                     </li>
                   </ul>
-                   <PayPalButton 
-                     amount="109.99" 
-                     plan="founder" 
-                     onSuccess={handlePaymentSuccess} 
-                   />
+                   <div className="mb-6">
+                     <label className="flex items-center gap-3 cursor-pointer group">
+                       <div className="relative">
+                         <input 
+                           type="checkbox" 
+                           className="peer sr-only" 
+                           checked={agreedToTerms}
+                           onChange={() => setAgreedToTerms(!agreedToTerms)}
+                         />
+                         <div className="w-5 h-5 border-2 border-indigo-500/50 rounded-md peer-checked:bg-indigo-500 peer-checked:border-indigo-500 transition-all flex items-center justify-center">
+                           <Check size={12} className={`text-white transition-opacity ${agreedToTerms ? 'opacity-100' : 'opacity-0'}`} />
+                         </div>
+                       </div>
+                       <span className="text-[10px] font-medium text-indigo-300/60 group-hover:text-indigo-300">
+                         I agree to the <Link to="/terms" target="_blank" className="underline hover:text-white">Terms of Service</Link>
+                       </span>
+                     </label>
+                   </div>
+                   {agreedToTerms ? (
+                     <PayPalButton 
+                       amount="109.99" 
+                       plan="founder" 
+                       onSuccess={handlePaymentSuccess} 
+                     />
+                   ) : (
+                     <button className="w-full py-4 bg-indigo-500/10 border border-indigo-500/20 rounded-2xl text-indigo-400/50 font-bold cursor-not-allowed">
+                        PayPal (Agree to terms)
+                     </button>
+                   )}
                  </div>
                </div>
             </div>
