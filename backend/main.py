@@ -10,7 +10,7 @@ import urllib.parse
 from contextlib import asynccontextmanager
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
-import google.generativeai as genai
+from google import genai
 from prompts import get_quiz_prompt, get_aki_style_prompt
 
 from routers import wallet, materials, auth, tutor
@@ -122,12 +122,11 @@ async def update_config_endpoint(update: ConfigUpdate):
     if update.openai_api_key and "*" not in update.openai_api_key:
         config.update_config("openai_api_key", update.openai_api_key)
         # Re-initialize OpenAI client
-        # Force reload in config service (handled by config.update_config)
         pass
 
     if update.gemini_api_key and "*" not in update.gemini_api_key:
         config.update_config("gemini_api_key", update.gemini_api_key)
-        genai.configure(api_key=update.gemini_api_key)
+        # Initialization handled inside function calls via Client() in the new SDK
 
     if update.model:
         config.update_config("model", update.model)
@@ -154,11 +153,10 @@ async def test_api_config(current_user: dict = Depends(get_current_user)):
     results = {"openai": "Not Configured", "gemini": "Not Configured"}
     
     # Test OpenAI
-    client = get_openai_client()
-    if client:
+    client_oa = get_openai_client()
+    if client_oa:
         try:
-            # Simple call to list models to verify key
-            await client.models.list()
+            await client_oa.models.list()
             results["openai"] = "✅ Success"
         except Exception as e:
             results["openai"] = f"❌ Error: {str(e)}"
@@ -167,10 +165,9 @@ async def test_api_config(current_user: dict = Depends(get_current_user)):
     gemini_key = config.get_config().get("gemini_api_key")
     if gemini_key:
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=gemini_key)
+            client_g = genai.Client(api_key=gemini_key)
             # Simple call to list models
-            genai.list_models()
+            client_g.models.list()
             results["gemini"] = "✅ Success"
         except Exception as e:
             results["gemini"] = f"❌ Error: {str(e)}"
@@ -296,13 +293,16 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                         raise HTTPException(status_code=503, detail="Gemini API key not configured")
                     
                     try:
-                        genai.configure(api_key=gemini_key)
-                        model = genai.GenerativeModel(target_model)
+                        client_g = genai.Client(api_key=gemini_key)
                         print(f"Sending request to Gemini ({req.model})...")
-                        # Gemini 1.5 supports JSON response schema via generation_config
-                        response = model.generate_content(
-                            prompt,
-                            generation_config={"response_mime_type": "application/json", "temperature": 0.2}
+                        # New SDK: contents instead of prompt, model instead of GenerativeModel
+                        response = client_g.models.generate_content(
+                            model=target_model,
+                            contents=prompt,
+                            config={
+                                "response_mime_type": "application/json", 
+                                "temperature": 0.2
+                            }
                         )
                         content = response.text
                         print(f"=== Gemini Response ===\n{content[:100]}...\n===")
@@ -313,11 +313,11 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                         if "429" in error_str or "quota" in error_str.lower():
                             print(f"Gemini Quota Exceeded (429). Falling back to GPT-4o...")
                             # Fallback to OpenAI
-                            client = get_openai_client()
-                            if not client:
+                            client_oa = get_openai_client()
+                            if not client_oa:
                                 raise HTTPException(status_code=503, detail="Gemini Quota Exceeded and OpenAI not configured.")
                             
-                            response = await client.chat.completions.create(
+                            response = await client_oa.chat.completions.create(
                                 model="gpt-4o",
                                 messages=[
                                     {"role": "system", "content": "You are a Japanese language quiz generator. Output must be valid JSON. (Gemini Fallback)"},
@@ -404,12 +404,15 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                 raise HTTPException(status_code=503, detail="Gemini API key not configured")
             
             try:
-                genai.configure(api_key=gemini_key)
-                model = genai.GenerativeModel(target_model)
+                client_g = genai.Client(api_key=gemini_key)
                 print(f"Sending request to Gemini ({req.model}) for Reading...")
-                response = model.generate_content(
-                    prompt,
-                    generation_config={"response_mime_type": "application/json", "temperature": 0.2}
+                response = client_g.models.generate_content(
+                    model=target_model,
+                    contents=prompt,
+                    config={
+                        "response_mime_type": "application/json", 
+                        "temperature": 0.2
+                    }
                 )
                 raw_content = response.text
                 print(f"=== Gemini Reading Response ===\n{raw_content[:100]}...\n===")
@@ -492,16 +495,22 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
             if not gemini_key:
                  raise HTTPException(status_code=401, detail="Gemini API Key not configured")
             
-            genai.configure(api_key=gemini_key)
-            model_instance = genai.GenerativeModel(req.model)
+            client_g = genai.Client(api_key=gemini_key)
             
-            response = model_instance.generate_content([
-                prompt,
-                {
-                    "mime_type": "image/png", 
-                    "data": data['image_base64']
+            response = client_g.models.generate_content(
+                model=req.model,
+                contents=[
+                    prompt,
+                    {
+                        "mime_type": "image/png", 
+                        "data": data['image_base64']
+                    }
+                ],
+                config={
+                    "response_mime_type": "application/json", 
+                    "temperature": 0.2
                 }
-            ], generation_config={"response_mime_type": "application/json", "temperature": 0.2})
+            )
             
             content = response.text
         else:

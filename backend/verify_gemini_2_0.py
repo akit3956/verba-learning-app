@@ -1,5 +1,5 @@
 import os
-import google.generativeai as genai
+from google import genai
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -10,15 +10,15 @@ if not api_key:
     print("Error: GEMINI_API_KEY not found.")
     exit(1)
 
-genai.configure(api_key=api_key)
+client = genai.Client(api_key=api_key)
 
 try:
-    models_to_test = ["gemini-2.5-flash", "gemini-flash-latest"]
+    # Testing known available models
+    models_to_test = ["gemini-2.0-flash", "gemini-1.5-flash"]
     for m in models_to_test:
         try:
-            print(f"\nGeneratig content with {m}...")
-            model = genai.GenerativeModel(m)
-            response = model.generate_content("Hello")
+            print(f"\nGenerating content with {m}...")
+            response = client.models.generate_content(model=m, contents="Hello")
             print(f"Response from {m}: {response.text}")
             print(f"SUCCESS with {m}!")
             break

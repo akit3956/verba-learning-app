@@ -8,6 +8,8 @@ import urllib.parse
 from openai import AsyncOpenAI
 import json
 
+from google import genai
+
 from prompts import get_generation_prompt
 import config
 
@@ -63,44 +65,34 @@ async def generate_material(req: MaterialRequest, current_user: dict = Depends(g
 
     # Gemini Logic
     elif req.model.startswith("gemini"):
-        # Import genai lazily or at top level (already imported commonly in main, but need here)
-        import google.generativeai as genai
-        
         gemini_key = os.getenv("GEMINI_API_KEY") or config.get_config().get("gemini_api_key")
         if not gemini_key:
              raise HTTPException(status_code=503, detail="Gemini API key not configured")
         
         try:
-            genai.configure(api_key=gemini_key)
-            model = genai.GenerativeModel(target_model)
+            client_g = genai.Client(api_key=gemini_key)
             
-            # Use 'response_mime_type' only if we wanted JSON, but here we generally want text.
-            # However, if the prompt asks for JSON (like Quiz), we might get JSON text.
-            # We'll just return whatever Gemini gives as string.
-            response = model.generate_content(
-                prompt,
-                generation_config={"temperature": 0.2} 
+            response = client_g.models.generate_content(
+                model=target_model,
+                contents=prompt,
+                config={"temperature": 0.2}
             )
-            # Check for safety blocking
-            if response.prompt_feedback.block_reason:
-                raise HTTPException(status_code=400, detail=f"Blocked by Gemini Safety Filter: {response.prompt_feedback}")
             
-            try:
-                return {"result": response.text}
-            except ValueError:
-                 # If response.text fails, it's likely empty due to safety or other reason
-                 print(f"Gemini Empty Response: {response.prompt_feedback}")
-                 raise HTTPException(status_code=500, detail="Gemini returned no text (likely safety filter).")
+            if not response.text:
+                 raise HTTPException(status_code=500, detail="Gemini returned no text (likely safety filter or generation error).")
+            
+            return {"result": response.text}
+
         except Exception as e:
             error_str = str(e)
             if "429" in error_str or "quota" in error_str.lower():
                 print(f"Gemini Quota Exceeded (429). Falling back to GPT-4o...")
                 # Fallback to OpenAI
-                client = get_openai_client()
-                if not client:
+                client_oa = get_openai_client()
+                if not client_oa:
                     raise HTTPException(status_code=503, detail="Gemini Quota Exceeded and OpenAI not configured.")
                 
-                response = await client.chat.completions.create(
+                response = await client_oa.chat.completions.create(
                     model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "あなたは日本語教師です。（Geminiフォールバック）"},

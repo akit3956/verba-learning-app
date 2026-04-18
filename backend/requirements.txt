@@ -6,7 +6,8 @@ python-dotenv
 openai
 httpx
 pdfplumber
-google-generativeai
+google-genai
+
 bcrypt
 python-jose[cryptography]
 python-multipart
