@@ -65,13 +65,8 @@ app.include_router(tutor.router)
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "https://verba-learning-app.vercel.app",
-        "https://verba-learning-app.vercel.app/"
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False, # Changed to False for wildcard support during test
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],

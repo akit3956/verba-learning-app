@@ -130,7 +130,7 @@ def render_paypal_button(container_id, amount, plan_name, redirect_url):
     components.html(
         f"""
         <div style="text-align: center; margin-top: 10px;">
-            <script src="https://www.paypal.com/sdk/js?client-id={paypal_client_id}&currency=USD"></script>
+            <script src="https://www.paypal.com/sdk/js?client-id=AR0TveR8JR7AgvfPzsiYuQ0QYLVFSlzY8FIKnwM4r-apGra8xKaI1R7XstSoVxEtvlXzY2WUnCxWWPZP&currency=USD&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
             <div id="{container_id}"></div>
             <script>
               paypal.Buttons({{

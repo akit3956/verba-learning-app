@@ -5,32 +5,37 @@ import { useNavigate } from 'react-router-dom';
 
 const PayPalButton = ({ amount, plan, onSuccess }) => {
   const containerRef = React.useRef(null);
+  
+  const PLAN_ID_MAP = {
+    'pro': 'P-8SY96959DW884681XNHRQM2I',
+    'founder': 'P-8TN50650638884621NHRQPAI'
+  };
 
   React.useEffect(() => {
     if (window.paypal && containerRef.current) {
-      containerRef.current.innerHTML = ''; // Clear previous button
+      containerRef.current.innerHTML = ''; 
       window.paypal.Buttons({
         style: {
           shape: 'rect',
           color: 'gold',
           layout: 'vertical',
-          label: 'pay',
+          label: 'subscribe',
         },
-        createOrder: (data, actions) => {
-          return actions.order.create({
-            purchase_units: [{
-              amount: { value: amount }
-            }]
+        createSubscription: (data, actions) => {
+          return actions.subscription.create({
+            plan_id: PLAN_ID_MAP[plan]
           });
         },
         onApprove: (data, actions) => {
-          return actions.order.capture().then((details) => {
-            onSuccess(plan);
-          });
+          console.log("Subscription Successful:", data.subscriptionID);
+          onSuccess(plan, data.subscriptionID);
+        },
+        onError: (err) => {
+          console.error("PayPal Subscription Error:", err);
         }
       }).render(containerRef.current);
     }
-  }, [amount, plan, onSuccess]);
+  }, [plan, onSuccess]);
 
   return <div ref={containerRef} className="w-full mt-4" />;
 };
@@ -39,8 +44,8 @@ const Landing = () => {
   const navigate = useNavigate();
   const [agreedToTerms, setAgreedToTerms] = React.useState(false);
 
-  const handlePaymentSuccess = (plan) => {
-    navigate(`/auth?payment=success&plan=${plan}`);
+  const handlePaymentSuccess = (plan, subscriptionId) => {
+    navigate(`/auth?payment=success&plan=${plan}&subscription_id=${subscriptionId}`);
   };
 
   return (

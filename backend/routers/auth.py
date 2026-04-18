@@ -31,6 +31,7 @@ class UserCreate(BaseModel):
     password: str
     is_founder: bool = False
     plan_type: str = "standard"
+    paypal_subscription_id: Optional[str] = None
 
 class Token(BaseModel):
     access_token: str
@@ -145,8 +146,13 @@ async def register(user: UserCreate, request: Request):
         hashed_password = get_password_hash(user.password)
         initial_bonus = 10000 if plan_type == 'founder' else 0
         
-        c.execute("INSERT INTO users (id, email, username, password_hash, vrb_balance, plan_type, registration_ip) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-                  (user_id, user.email, user.username, hashed_password, initial_bonus, plan_type, client_ip))
+        c.execute("INSERT INTO users (id, email, username, password_hash, vrb_balance, plan_type, registration_ip, paypal_subscription_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+                  (user_id, user.email, user.username, hashed_password, initial_bonus, plan_type, client_ip, user.paypal_subscription_id))
+        
+        # Log subscription
+        if user.paypal_subscription_id:
+            print(f"New User {user.email} registered with Subscription: {user.paypal_subscription_id}")
+
         conn.commit()
     except HTTPException:
         raise

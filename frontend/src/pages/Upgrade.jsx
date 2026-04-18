@@ -3,11 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Sparkles, Check, Star, Zap, Shield, AlertCircle, MessageCircle } from 'lucide-react';
 import API_BASE_URL from "../api_config";
 
-const PayPalButton = ({ amount, onApprove, onError }) => {
+const PayPalButton = ({ amount, planId, onApprove, onError }) => {
     const containerRef = React.useRef(null);
   
     React.useEffect(() => {
-      // Clean up previous button to prevent duplicates
       if (containerRef.current) {
           containerRef.current.innerHTML = '';
       }
@@ -15,22 +14,35 @@ const PayPalButton = ({ amount, onApprove, onError }) => {
       if (window.paypal && containerRef.current) {
         window.paypal.Buttons({
           style: {
-            shape: 'rect',
+            shape: 'pill',
             color: 'gold',
             layout: 'vertical',
-            label: 'pay',
+            label: planId ? 'subscribe' : 'pay',
           },
-          createOrder: (data, actions) => {
+          // Conditional logic: if planId is provided, create a subscription. Otherwise, create an order.
+          createSubscription: planId ? (data, actions) => {
+            return actions.subscription.create({
+              plan_id: planId
+            });
+          } : undefined,
+          createOrder: !planId ? (data, actions) => {
             return actions.order.create({
               purchase_units: [{
                 amount: { value: amount }
               }]
             });
-          },
+          } : undefined,
           onApprove: (data, actions) => {
-            return actions.order.capture().then((details) => {
-              onApprove(details);
-            });
+            if (planId) {
+              // For subscriptions, onApprove returns data.subscriptionID
+              console.log("Subscription ID:", data.subscriptionID);
+              onApprove({ id: data.subscriptionID, isSubscription: true });
+            } else {
+              // For orders, we still need to capture
+              return actions.order.capture().then((details) => {
+                onApprove({ ...details, isSubscription: false });
+              });
+            }
           },
           onError: (err) => {
              console.error("PayPal Error:", err);
@@ -38,7 +50,7 @@ const PayPalButton = ({ amount, onApprove, onError }) => {
           }
         }).render(containerRef.current);
       }
-    }, [amount, onApprove, onError]);
+    }, [amount, planId, onApprove, onError]);
   
     return <div ref={containerRef} className="w-full mt-4" style={{ minHeight: '150px' }} />;
   };
@@ -49,7 +61,7 @@ const Upgrade = () => {
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [successMessage, setSuccessMessage] = useState(null);
 
-    const handleUpgradePro = async (details) => {
+    const handleUpgradePlan = async (details, planType) => {
         setLoading(true);
         setError(null);
         try {
@@ -62,18 +74,18 @@ const Upgrade = () => {
                 },
                 body: JSON.stringify({
                     paypal_order_id: details.id,
-                    plan_type: 'pro'
+                    paypal_subscription_id: details.isSubscription ? details.id : null,
+                    plan_type: planType
                 })
             });
 
-            if (!res.ok) throw new Error("Failed to upgrade plan on the server.");
+            if (!res.ok) throw new Error(`Failed to upgrade to ${planType} on the server.`);
             
-            setSuccessMessage("Successfully upgraded to Pro! Welcome to unlimited learning.");
+            setSuccessMessage(`Successfully upgraded to ${planType.toUpperCase()}! Welcome to the club.`);
             
-            // Reload page or force auth refresh in a real app. For now we prompt re-login or just navigate.
             setTimeout(() => {
                 navigate('/');
-                window.location.reload(); // Refresh to ensure NavBar gets the new userPlan
+                window.location.reload();
             }, 3000);
         } catch (err) {
             setError(err.message);
@@ -114,7 +126,7 @@ const Upgrade = () => {
 
     return (
         <div className="min-h-screen pt-10 px-6">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl font-bold text-slate-800 mb-4 flex items-center justify-center gap-2">
                         <Sparkles className="text-indigo-500" /> Account Upgrade
@@ -141,55 +153,38 @@ const Upgrade = () => {
                         <div className="text-xl text-indigo-600 font-bold animate-pulse">Processing your transaction...</div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         
                         {/* Token Purchase Section */}
-                        <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200 flex flex-col hover:shadow-md transition-shadow">
+                        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col hover:shadow-md transition-shadow">
                             <div className="mb-6">
                                 <div className="text-emerald-600 bg-emerald-50 inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mb-4 tracking-tighter">Token Pack</div>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-4xl font-bold text-slate-800">$5.00</span>
+                                    <span className="text-3xl font-bold text-slate-800">$5.00</span>
                                 </div>
                                 <p className="text-slate-500 text-sm mt-1">One-time purchase</p>
                             </div>
                             
-                            <ul className="space-y-4 mb-8 flex-1">
-                                <li className="flex gap-3 text-sm text-slate-600 font-medium">
-                                    <div className="w-5 h-5 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                                        <Star size={12} className="text-emerald-600" />
-                                    </div>
-                                    Get 500 VRB Tokens Instantly
+                            <ul className="space-y-3 mb-6 flex-1 text-sm">
+                                <li className="flex gap-2 text-slate-600">
+                                    <Star size={14} className="text-emerald-600 shrink-0 mt-0.5" />
+                                    500 VRB Tokens
                                 </li>
-                                <li className="flex gap-3 text-sm text-slate-600 font-medium">
-                                    <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                                        <Check size={12} className="text-slate-600" />
-                                    </div>
-                                    Use for quizzes and AI Tutor rounds
-                                </li>
-                                <li className="flex gap-3 text-sm text-slate-600 font-medium">
-                                    <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                                        <Check size={12} className="text-slate-600" />
-                                    </div>
-                                    Never expires
+                                <li className="flex gap-2 text-slate-600">
+                                    <Check size={14} className="text-slate-600 shrink-0 mt-0.5" />
+                                    Access to all AI Quizzes
                                 </li>
                             </ul>
                             
-                            <div className="mb-6">
-                                <label className="flex items-center gap-3 cursor-pointer group">
-                                    <div className="relative">
-                                        <input 
-                                            type="checkbox" 
-                                            className="peer sr-only" 
-                                            checked={agreedToTerms}
-                                            onChange={() => setAgreedToTerms(!agreedToTerms)}
-                                        />
-                                        <div className="w-5 h-5 border-2 border-slate-300 rounded peer-checked:bg-emerald-500 peer-checked:border-emerald-500 transition-all flex items-center justify-center">
-                                            <Check size={12} className={`text-white transition-opacity ${agreedToTerms ? 'opacity-100' : 'opacity-0'}`} />
-                                        </div>
-                                    </div>
-                                    <span className="text-xs font-medium text-slate-500 group-hover:text-slate-700">
-                                        I agree to the <Link to="/terms" target="_blank" className="underline text-emerald-600">Terms of Service</Link>
-                                    </span>
+                            <div className="mb-4">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        className="rounded border-slate-300"
+                                        checked={agreedToTerms}
+                                        onChange={() => setAgreedToTerms(!agreedToTerms)}
+                                    />
+                                    <span className="text-[10px] text-slate-500">Agree to Terms</span>
                                 </label>
                             </div>
 
@@ -197,80 +192,108 @@ const Upgrade = () => {
                                 <PayPalButton 
                                     amount="5.00" 
                                     onApprove={(details) => handlePurchaseVRB(details, 5.00, 500)} 
-                                    onError={(err) => setError("PayPal transaction failed. Please try again.")}
+                                    onError={(err) => setError("PayPal transaction failed.")}
                                 />
                             ) : (
-                                <button className="w-full py-4 bg-slate-100 border border-slate-200 rounded-2xl text-slate-400 font-bold cursor-not-allowed opacity-70">
-                                    PayPal (Agree to terms)
+                                <button className="w-full py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 font-bold text-sm cursor-not-allowed">
+                                    PayPal
                                 </button>
                             )}
                         </div>
 
                         {/* Pro Upgrade Section */}
-                        <div className="bg-gradient-to-b from-indigo-50 to-white p-8 rounded-3xl shadow-md border border-indigo-100 flex flex-col hover:shadow-lg transition-shadow relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
-                            
-                            <div className="mb-6 relative z-10">
-                                <div className="text-indigo-600 bg-indigo-100 inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mb-4 tracking-tighter shadow-sm">Verba Pro</div>
+                        <div className="bg-gradient-to-b from-indigo-50 to-white p-6 rounded-3xl shadow-md border border-indigo-100 flex flex-col hover:shadow-lg transition-shadow">
+                            <div className="mb-6">
+                                <div className="text-indigo-600 bg-indigo-100 inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mb-4 tracking-tighter">Verba Pro</div>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-4xl font-bold text-indigo-900">$12.99</span>
-                                    <span className="text-slate-500 font-medium text-sm">/ Month</span>
+                                    <span className="text-3xl font-bold text-indigo-900">$12.99</span>
+                                    <span className="text-slate-500 font-medium text-xs">/ Mo</span>
                                 </div>
-                                <p className="text-indigo-600/80 text-sm mt-1 font-medium">1-Month Unlimited Pass</p>
+                                <p className="text-indigo-600/80 text-xs mt-1 font-medium">Monthly Subscription</p>
                             </div>
                             
-                            <ul className="space-y-4 mb-8 flex-1 relative z-10">
-                                <li className="flex gap-3 text-sm text-slate-700 font-medium">
-                                    <div className="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                                        <Zap size={12} className="text-indigo-600" />
-                                    </div>
-                                    Unlimited JLPT Quizzes
+                            <ul className="space-y-3 mb-6 flex-1 text-sm">
+                                <li className="flex gap-2 text-slate-700">
+                                    <Zap size={14} className="text-indigo-600 shrink-0 mt-0.5" />
+                                    Unlimited AI Quizzes
                                 </li>
-                                <li className="flex gap-3 text-sm text-slate-700 font-medium">
-                                    <div className="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                                        <MessageCircle size={12} className="text-indigo-600" />
-                                    </div>
-                                    Unlimited AI Tutor Chat (24/7)
-                                </li>
-                                <li className="flex gap-3 text-sm text-slate-700 font-medium">
-                                    <div className="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                                        <Shield size={12} className="text-indigo-600" />
-                                    </div>
-                                    Priority email support
+                                <li className="flex gap-2 text-slate-700">
+                                    <Check size={14} className="text-indigo-600 shrink-0 mt-0.5" />
+                                    24/7 AI Tutor Chat
                                 </li>
                             </ul>
                             
-                            <div className="relative z-10">
-                                <div className="mb-6">
-                                    <label className="flex items-center gap-3 cursor-pointer group">
-                                        <div className="relative">
-                                            <input 
-                                                type="checkbox" 
-                                                className="peer sr-only" 
-                                                checked={agreedToTerms}
-                                                onChange={() => setAgreedToTerms(!agreedToTerms)}
-                                            />
-                                            <div className="w-5 h-5 border-2 border-indigo-200 rounded peer-checked:bg-indigo-600 peer-checked:border-indigo-600 transition-all flex items-center justify-center">
-                                                <Check size={12} className={`text-white transition-opacity ${agreedToTerms ? 'opacity-100' : 'opacity-0'}`} />
-                                            </div>
-                                        </div>
-                                        <span className="text-xs font-medium text-slate-500 group-hover:text-slate-700">
-                                            I agree to the <Link to="/terms" target="_blank" className="underline text-indigo-600">Terms of Service</Link>
-                                        </span>
-                                    </label>
-                                </div>
-                                {agreedToTerms ? (
-                                    <PayPalButton 
-                                        amount="12.99" 
-                                        onApprove={(details) => handleUpgradePro(details)} 
-                                        onError={(err) => setError("PayPal transaction failed. Please try again.")}
+                            <div className="mb-4">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        className="rounded border-indigo-300"
+                                        checked={agreedToTerms}
+                                        onChange={() => setAgreedToTerms(!agreedToTerms)}
                                     />
-                                ) : (
-                                    <button className="w-full py-4 bg-indigo-50/50 border border-indigo-100 rounded-2xl text-indigo-300 font-bold cursor-not-allowed">
-                                        PayPal (Agree to terms)
-                                    </button>
-                                )}
+                                    <span className="text-[10px] text-slate-500">Agree to Terms</span>
+                                </label>
                             </div>
+                            {agreedToTerms ? (
+                                <PayPalButton 
+                                    amount="12.99" 
+                                    planId="P-8SY96959DW884681XNHRQM2I" 
+                                    onApprove={(details) => handleUpgradePlan(details, 'pro')} 
+                                    onError={(err) => setError("PayPal transaction failed.")}
+                                />
+                            ) : (
+                                <button className="w-full py-3 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-300 font-bold text-sm cursor-not-allowed">
+                                    PayPal
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Founder's Club Section */}
+                        <div className="bg-[#0f172a] p-6 rounded-3xl shadow-xl border border-indigo-500/30 flex flex-col hover:shadow-indigo-500/20 transition-all relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-500/10 rounded-full blur-xl"></div>
+                            <div className="mb-6 relative z-10">
+                                <div className="text-indigo-400 bg-indigo-500/10 inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mb-4 tracking-tighter">Founder's Pass</div>
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-3xl font-bold text-white">$109.99</span>
+                                    <span className="text-slate-500 font-medium text-xs">/ Yr</span>
+                                </div>
+                                <p className="text-indigo-400/80 text-xs mt-1 font-medium">Yearly Membership</p>
+                            </div>
+                            
+                            <ul className="space-y-3 mb-6 flex-1 text-sm relative z-10">
+                                <li className="flex gap-2 text-indigo-100">
+                                    <Shield size={14} className="text-indigo-400 shrink-0 mt-0.5" />
+                                    1 Year Pro + 10k VRB
+                                </li>
+                                <li className="flex gap-2 text-indigo-100">
+                                    <Star size={14} className="text-indigo-400 shrink-0 mt-0.5" />
+                                    VIP Discord Access
+                                </li>
+                            </ul>
+                            
+                            <div className="mb-4 relative z-10">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        className="rounded border-indigo-500/50"
+                                        checked={agreedToTerms}
+                                        onChange={() => setAgreedToTerms(!agreedToTerms)}
+                                    />
+                                    <span className="text-[10px] text-indigo-300/60">Agree to Terms</span>
+                                </label>
+                            </div>
+                            {agreedToTerms ? (
+                                <PayPalButton 
+                                    amount="109.99" 
+                                    planId="P-8TN50650638884621NHRQPAI" 
+                                    onApprove={(details) => handleUpgradePlan(details, 'founder')} 
+                                    onError={(err) => setError("PayPal transaction failed.")}
+                                />
+                            ) : (
+                                <button className="w-full py-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400/50 font-bold text-sm cursor-not-allowed">
+                                    PayPal
+                                </button>
+                            )}
                         </div>
 
                     </div>

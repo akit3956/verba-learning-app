@@ -13,6 +13,7 @@ const Auth = ({ onLogin }) => {
     const [loading, setLoading] = useState(false);
     const [planType, setPlanType] = useState('standard');
     const [isPaymentVerified, setIsPaymentVerified] = useState(false);
+    const [subscriptionId, setSubscriptionId] = useState('');
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
@@ -28,6 +29,8 @@ const Auth = ({ onLogin }) => {
 
         if (payment === 'success') {
             setIsPaymentVerified(true);
+            const subId = params.get('subscription_id');
+            if (subId) setSubscriptionId(subId);
         }
     }, []);
 
@@ -89,7 +92,8 @@ const Auth = ({ onLogin }) => {
                     username, 
                     password, 
                     plan_type: planType,
-                    is_founder: planType === 'founder' 
+                    is_founder: planType === 'founder',
+                    paypal_subscription_id: subscriptionId
                 });
                 headers = { 'Content-Type': 'application/json' };
             }

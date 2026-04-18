@@ -138,6 +138,14 @@ def init_db():
             conn.rollback()
             pass
 
+    # Migration: Add paypal_subscription_id for recurring payments
+    if "paypal_subscription_id" not in columns:
+        try:
+            c.execute("ALTER TABLE users ADD COLUMN paypal_subscription_id TEXT")
+        except Exception:
+            conn.rollback()
+            pass
+
     # Settings Table (Persistent Config)
     c.execute('''
         CREATE TABLE IF NOT EXISTS settings (

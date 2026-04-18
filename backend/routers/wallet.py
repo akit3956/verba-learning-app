@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
+from typing import Optional
 import psycopg2
 import psycopg2.extras
 from database import get_db_connection, UserBalance, Transaction
@@ -23,6 +24,7 @@ class PurchaseTokensRequest(BaseModel):
 
 class UpgradePlanRequest(BaseModel):
     paypal_order_id: str
+    paypal_subscription_id: Optional[str] = None
     plan_type: str
 
 @router.get("/balance", response_model=UserBalance)
@@ -224,9 +226,20 @@ async def upgrade_plan(req: UpgradePlanRequest, current_user: dict = Depends(get
     conn = get_db_connection()
     c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     
-    # Update plan
-    c.execute("UPDATE users SET plan_type = %s WHERE id = %s RETURNING plan_type", (req.plan_type, user_id))
+    # Update plan and subscription ID
+    c.execute("""
+        UPDATE users 
+        SET plan_type = %s, paypal_subscription_id = %s 
+        WHERE id = %s 
+        RETURNING plan_type, paypal_subscription_id
+    """, (req.plan_type, req.paypal_subscription_id, user_id))
     updated_user = c.fetchone()
+    
+    # Log the upgrade
+    if req.paypal_subscription_id:
+        print(f"User {user_id} upgraded to {req.plan_type} with Subscription: {req.paypal_subscription_id}")
+    else:
+        print(f"User {user_id} upgraded to {req.plan_type} with Order: {req.paypal_order_id}")
     
     if not updated_user:
         conn.rollback()
