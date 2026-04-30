@@ -250,9 +250,7 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                 prompt = get_aki_style_prompt(req.level, req.topic, req.category, loop_index=i, total_count=count, reference_text=reference_text)
                 
                 # Model check (Constraint to 2 models)
-                target_model = req.model
-                if target_model not in ["gpt-4o", "gemini-2.0-flash"]:
-                    target_model = "gpt-4o" # Strict fallback
+                target_model = "gpt-4o" # Strict fallback / Forced to bypass Gemini limits
 
                 is_openai = target_model.startswith("gpt-")
                 is_gemini = target_model.startswith("gemini")
@@ -367,9 +365,7 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
         prompt = get_quiz_prompt(req.category, req.level, count, reference_text, None, req.include_image)
         
         # Model check (Reading)
-        target_model = req.model
-        if target_model not in ["gpt-4o", "gemini-2.0-flash"]:
-            target_model = "gpt-4o"
+        target_model = "gpt-4o" # Strict fallback / Forced to bypass Gemini limits
 
         is_openai = target_model.startswith("gpt-")
         if is_openai:
@@ -480,9 +476,7 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
     """
     
     # Model validation
-    target_model = req.model
-    if target_model not in ["gpt-4o", "gemini-2.0-flash"]:
-        target_model = "gpt-4o"
+    target_model = "gpt-4o" # Strict fallback / Forced to bypass Gemini limits
 
     try:
         if target_model.startswith("gemini"):
