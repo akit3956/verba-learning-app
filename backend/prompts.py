@@ -1,3 +1,33 @@
+import json
+import os
+
+METHODOLOGY_JSON_PATH = os.path.join(os.path.dirname(__file__), "data", "teaching_methodology_n5_n4.json")
+
+def get_teaching_framework():
+    if not os.path.exists(METHODOLOGY_JSON_PATH):
+        return ""
+    try:
+        with open(METHODOLOGY_JSON_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+        
+        framework_str = "【知識の骨子：日本語教育 教授法 基礎知識（絶対遵守）】\n"
+        for chapter in data.get("curriculum", []):
+            framework_str += f"■ {chapter.get('topic', '')}\n"
+            if "fundamental_principles" in chapter:
+                for p in chapter["fundamental_principles"]:
+                    framework_str += f"  - {p}\n"
+            if "categories" in chapter:
+                for k, v in chapter["categories"].items():
+                    framework_str += f"  - {v}\n"
+            if "key_insights" in chapter:
+                for k in chapter["key_insights"]:
+                    framework_str += f"  - {k}\n"
+            if "standard_lesson_flow" in chapter:
+                framework_str += f"  - 授業の流れ: {' -> '.join(chapter['standard_lesson_flow'])}\n"
+        return framework_str + "\n"
+    except Exception as e:
+        print(f"Error loading teaching methodology: {e}")
+        return ""
 
 AKI_SENSEI_STYLE = """
 【プロの日本語教師の指導スタイル（教案PDFより抽出）】
@@ -134,6 +164,7 @@ def get_aki_style_prompt(level, topic="", category="grammar", loop_index=0, tota
     あなたは最高峰の日本人日本語教師であり、JLPT（日本語能力試験）の公式問題作成委員です。
     {STRICT_NATIVE_TEACHER_RULES}
     
+    {get_teaching_framework()}
     ### 【今回のミッション】
     JLPT【 {level} 】レベルの「{category_label}問題」を1問だけ作成してください。
     
@@ -174,10 +205,12 @@ def get_aki_style_prompt(level, topic="", category="grammar", loop_index=0, tota
     """
 
 def get_tutor_system_prompt():
+    framework = get_teaching_framework()
     return f"""
 あなたは、厳格ながらもエレガントで親しみやすいプロの日本人日本語教師、ミス・キャプラン（Miss Kaplan）です。
 {STRICT_NATIVE_TEACHER_RULES}
 
+{framework}
 【ミス・キャプランの黄金比（The Golden Ratio Framework）】
 あなたの全ての回答は、以下の要素をブレンドしたものでなければなりません。
 
