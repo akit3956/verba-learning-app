@@ -120,7 +120,8 @@ const Auth = ({ onLogin }) => {
     };
 
     return (
-        <div style={styles.container}>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#faf7f2', padding: '20px' }}>
+            <div style={styles.container}>
             <div style={styles.card}>
                 {isPaymentVerified && !isLogin && (
                     <div style={styles.founderBanner}>
@@ -209,7 +210,7 @@ const Auth = ({ onLogin }) => {
                             <button 
                                 type="button" 
                                 onClick={() => { setIsForgotPassword(true); setError(''); setSuccessMsg(''); }}
-                                style={{ background: 'none', border: 'none', color: '#3182ce', fontSize: '13px', cursor: 'pointer', padding: 0 }}
+                                style={{ background: 'none', border: 'none', color: '#2a7c6f', fontSize: '13px', cursor: 'pointer', padding: 0 }}
                             >
                                 Forgot Password?
                             </button>
@@ -262,6 +263,7 @@ const Auth = ({ onLogin }) => {
                 </div>
             </div>
         </div>
+        </div>
     );
 };
 
@@ -272,11 +274,11 @@ const styles = {
         margin: '0 auto',
     },
     card: {
-        background: '#ffffff',
+        background: '#fff8f0',
         borderRadius: '16px',
-        boxShadow: '0 8px 30px rgba(0,0,0,0.08)',
+        boxShadow: '0 20px 40px rgba(80,55,30,0.05)',
         padding: '32px',
-        border: '1px solid rgba(0,0,0,0.05)',
+        border: '1px solid rgba(80,55,30,0.1)',
     },
     founderBanner: {
         display: 'flex',
@@ -299,12 +301,12 @@ const styles = {
     title: {
         fontSize: '24px',
         fontWeight: '700',
-        color: '#1a202c',
+        color: '#2c2118',
         marginBottom: '8px',
     },
     subtitle: {
         fontSize: '14px',
-        color: '#718096',
+        color: '#7a6a55',
         lineHeight: '1.5',
     },
     form: {
@@ -320,31 +322,31 @@ const styles = {
     inputIconWrapper: {
         position: 'absolute',
         left: '12px',
-        color: '#a0aec0',
+        color: '#7a6a55',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
     },
     inputIcon: {
-        color: '#a0aec0',
+        color: '#7a6a55',
     },
     input: {
         width: '100%',
         padding: '12px 12px 12px 40px',
         borderRadius: '8px',
-        border: '1px solid #e2e8f0',
+        border: '1px solid rgba(80,55,30,0.1)',
         fontSize: '15px',
         outline: 'none',
         transition: 'border-color 0.2s, box-shadow 0.2s',
         boxSizing: 'border-box',
-        backgroundColor: '#f8fafc',
+        backgroundColor: '#ffffff',
     },
     button: {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '8px',
-        background: '#3182ce',
+        background: '#2a7c6f',
         color: 'white',
         border: 'none',
         borderRadius: '8px',
@@ -373,12 +375,12 @@ const styles = {
     },
     switchText: {
         fontSize: '14px',
-        color: '#4a5568',
+        color: '#7a6a55',
     },
     switchButton: {
         background: 'none',
         border: 'none',
-        color: '#3182ce',
+        color: '#2a7c6f',
         fontWeight: '600',
         cursor: 'pointer',
         padding: 0,
