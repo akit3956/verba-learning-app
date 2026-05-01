@@ -66,12 +66,13 @@ const Landing = () => {
     <>
 {/* NAV */}
 <nav>
-  <a href="#" className="nav-logo">Ver<span>ba</span></a>
+  <Link to="/" className="nav-logo">Ver<span>ba</span></Link>
   <div className="nav-links">
     <a href="#how-it-works">How it works</a>
     <a href="#pricing">Pricing</a>
     <a href="#faq">FAQ</a>
-    <a href="#pricing" className="btn-nav">Start for Free →</a>
+    <Link to="/auth" style={{marginRight: '1rem', fontWeight: 600, color: 'var(--text)', textDecoration: 'none'}}>Log in</Link>
+    <Link to="/auth" className="btn-nav">Start for Free →</Link>
   </div>
 </nav>
 
