@@ -86,6 +86,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
+        jti: str = payload.get("jti")
         if username is None:
             raise credentials_exception
     except JWTError:
@@ -93,6 +94,15 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         
     conn = get_db_connection()
     c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    # Verify session is still active
+    if jti:
+        c.execute("SELECT 1 FROM user_sessions WHERE jti = %s", (jti,))
+        if not c.fetchone():
+            c.close()
+            conn.close()
+            raise credentials_exception
+
     c.execute("SELECT * FROM users WHERE email = %s", (username,))
     user = c.fetchone()
     c.close()
@@ -170,7 +180,7 @@ async def register(user: UserCreate, request: Request):
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/login", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     try:
         conn = get_db_connection()
     except Exception:
@@ -197,9 +207,33 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
             headers={"WWW-Authenticate": "Bearer"},
         )
         
+    # --- Multi-device handling ---
+    jti = str(uuid.uuid4())
+    client_ip = request.client.host if request.client else "0.0.0.0"
+    try:
+        conn = get_db_connection()
+        c = conn.cursor()
+        c.execute("INSERT INTO user_sessions (user_id, jti, ip_address) VALUES (%s, %s, %s)", (user["id"], jti, client_ip))
+        
+        # Keep only max 2 sessions per user
+        c.execute("""
+            DELETE FROM user_sessions 
+            WHERE user_id = %s AND id NOT IN (
+                SELECT id FROM user_sessions 
+                WHERE user_id = %s 
+                ORDER BY created_at DESC 
+                LIMIT 2
+            )
+        """, (user["id"], user["id"]))
+        conn.commit()
+        c.close()
+        conn.close()
+    except Exception as e:
+        print(f"Session Error: {e}")
+        
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user["email"]}, expires_delta=access_token_expires
+        data={"sub": user["email"], "jti": jti}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
@@ -312,3 +346,41 @@ async def get_all_users(current_user: dict = Depends(get_current_user)):
             created_at=u["created_at"]
         ) for u in users
     ]
+
+from fastapi.responses import StreamingResponse
+import io
+import csv
+
+@router.get("/users/export")
+async def export_users_csv(current_user: dict = Depends(get_current_user)):
+    if current_user.get("email") != "aki@example.com" and current_user.get("username") != "Aki":
+        raise HTTPException(status_code=403, detail="Forbidden, admin only branch")
+        
+    conn = get_db_connection()
+    c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    
+    # Get users and their active sessions
+    c.execute("""
+        SELECT u.id, u.username, u.email, u.plan_type, u.created_at, 
+               string_agg(s.ip_address, ', ') as active_ips
+        FROM users u
+        LEFT JOIN user_sessions s ON u.id = s.user_id
+        GROUP BY u.id
+        ORDER BY u.created_at DESC
+    """)
+    rows = c.fetchall()
+    c.close()
+    conn.close()
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["ID", "Username", "Email", "Plan", "Created At", "Active IPs"])
+    for row in rows:
+        writer.writerow([row['id'], row['username'], row['email'], row['plan_type'], row['created_at'], row['active_ips'] or "None"])
+        
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=verba_users_export.csv"}
+    )

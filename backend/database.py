@@ -146,6 +146,19 @@ def init_db():
             conn.rollback()
             pass
 
+
+    # Active Sessions Table (For Max 2 devices limit)
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS user_sessions (
+            id SERIAL PRIMARY KEY,
+            user_id TEXT,
+            jti TEXT UNIQUE,
+            ip_address TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id)
+        )
+    """)
+
     # Settings Table (Persistent Config)
     c.execute('''
         CREATE TABLE IF NOT EXISTS settings (

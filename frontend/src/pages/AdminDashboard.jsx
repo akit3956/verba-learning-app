@@ -105,6 +105,31 @@ const AdminDashboard = () => {
         }
     };
 
+    const downloadCsv = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${API_BASE_URL}/auth/users/export`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to export CSV");
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "verba_users_export.csv";
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (err) {
+            alert("Error downloading CSV: " + err.message);
+        }
+    };
+
     useEffect(() => {
         fetchUsers();
         fetchConfig();
@@ -200,7 +225,12 @@ const AdminDashboard = () => {
             </div>
 
             <div style={styles.tableCard}>
-                <h2 style={{ fontSize: '18px', marginBottom: '16px', color: '#2d3748' }}>User List</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h2 style={{ fontSize: '18px', margin: 0, color: '#2d3748' }}>User List</h2>
+                    <button onClick={downloadCsv} style={{ ...styles.saveBtn, background: '#48bb78', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', fontSize: '14px' }}>
+                        Download CSV
+                    </button>
+                </div>
                 {loading ? (
                     <p style={{ textAlign: 'center', color: '#718096', padding: '20px' }}>Loading users...</p>
                 ) : (
