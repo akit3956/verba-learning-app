@@ -73,6 +73,31 @@ function Wallet() {
         }
     };
 
+    const handleWithdraw = async () => {
+        if (!window.confirm("本当に退会しますか？この操作は取り消せず、保有しているVRB残高やクイズ履歴もすべて失われます。")) {
+            return;
+        }
+        
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(API_BASE_URL + '/auth/me', {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (res.ok) {
+                alert("退会処理が完了しました。ご利用ありがとうございました。");
+                localStorage.removeItem('token');
+                window.location.href = '/';
+            } else {
+                const err = await res.json();
+                alert(`退会に失敗しました: ${err.detail || '不明なエラー'}`);
+            }
+        } catch(err) {
+            alert('ネットワークエラーが発生しました');
+        }
+    };
+
     if (loading && !balance) return <div className="glass-panel">Loading Wallet...</div>;
 
     return (
@@ -185,7 +210,24 @@ function Wallet() {
                             </table>
                         )}
                     </div>
+
                 </div>
+            </div>
+
+            {/* Danger Zone */}
+            <div className="mt-8 bg-red-50 p-6 rounded-lg border border-red-100">
+                <h2 className="text-lg font-semibold mb-2 flex items-center gap-2 text-red-700">
+                    Danger Zone
+                </h2>
+                <p className="text-sm text-red-600 mb-4">
+                    アカウントを削除し、Verbaから退会します。保有しているVRBや学習履歴はすべて失われ、復元することはできません。
+                </p>
+                <button 
+                    onClick={handleWithdraw}
+                    className="bg-red-600 text-white py-2 px-4 rounded hover:bg-red-700 transition font-medium shadow-sm"
+                >
+                    アカウントを削除して退会する
+                </button>
             </div>
         </div>
     );

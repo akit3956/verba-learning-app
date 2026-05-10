@@ -384,3 +384,25 @@ async def export_users_csv(current_user: dict = Depends(get_current_user)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=verba_users_export.csv"}
     )
+
+@router.delete("/me")
+async def delete_user_account(current_user: dict = Depends(get_current_user)):
+    conn = get_db_connection()
+    c = conn.cursor()
+    user_id = current_user["id"]
+    try:
+        c.execute("DELETE FROM user_sessions WHERE user_id = %s", (user_id,))
+        c.execute("DELETE FROM password_reset_tokens WHERE user_id = %s", (user_id,))
+        c.execute("DELETE FROM transactions WHERE user_id = %s", (user_id,))
+        c.execute("DELETE FROM daily_usage WHERE user_id = %s", (user_id,))
+        c.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        conn.commit()
+    except Exception as e:
+        conn.rollback()
+        print(f"Account Deletion Error: {e}")
+        raise HTTPException(status_code=500, detail="アカウントの削除に失敗しました。")
+    finally:
+        c.close()
+        conn.close()
+        
+    return {"message": "Account successfully deleted"}
