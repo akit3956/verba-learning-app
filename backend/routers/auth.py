@@ -11,6 +11,8 @@ import psycopg2
 import psycopg2.extras
 import secrets
 import hashlib
+import requests
+import base64
 
 # Re-use from database.py
 from database import get_db_connection
@@ -385,12 +387,69 @@ async def export_users_csv(current_user: dict = Depends(get_current_user)):
         headers={"Content-Disposition": "attachment; filename=verba_users_export.csv"}
     )
 
+
+def cancel_paypal_subscription(subscription_id: str):
+    client_id = os.getenv("PAYPAL_CLIENT_ID")
+    secret = os.getenv("PAYPAL_SECRET_KEY")
+    # Default to sandbox if env is not explicitly set to production
+    # api_url = "https://api-m.paypal.com" if os.getenv("ENV") == "production" else "https://api-m.sandbox.paypal.com"
+    # For now, let's use production URL since the app seems to be live
+    api_url = "https://api-m.paypal.com"
+    
+    if not client_id or not secret:
+        print("PayPal credentials not set. Skipping cancellation.")
+        return False
+        
+    try:
+        auth_string = f"{client_id}:{secret}"
+        base64_auth = base64.b64encode(auth_string.encode('ascii')).decode('ascii')
+        
+        token_res = requests.post(
+            f"{api_url}/v1/oauth2/token",
+            headers={
+                "Authorization": f"Basic {base64_auth}",
+                "Content-Type": "application/x-www-form-urlencoded"
+            },
+            data={"grant_type": "client_credentials"}
+        )
+        if not token_res.ok:
+            print("Failed to get PayPal token:", token_res.text)
+            return False
+            
+        access_token = token_res.json()["access_token"]
+        
+        cancel_res = requests.post(
+            f"{api_url}/v1/billing/subscriptions/{subscription_id}/cancel",
+            headers={
+                "Authorization": f"Bearer {access_token}",
+                "Content-Type": "application/json"
+            },
+            json={"reason": "User deleted account in Verba App"}
+        )
+        if cancel_res.ok or cancel_res.status_code == 204:
+            print(f"Successfully cancelled PayPal subscription {subscription_id}")
+            return True
+        else:
+            print(f"Failed to cancel subscription {subscription_id}: {cancel_res.text}")
+            return False
+    except Exception as e:
+        print(f"PayPal API Error: {e}")
+        return False
+
 @router.delete("/me")
 async def delete_user_account(current_user: dict = Depends(get_current_user)):
     conn = get_db_connection()
     c = conn.cursor()
     user_id = current_user["id"]
     try:
+        # Cancel PayPal subscription if exists
+        c.execute("SELECT paypal_subscription_id FROM users WHERE id = %s", (user_id,))
+        row = c.fetchone()
+        sub_id = row[0] if row else None
+        
+        if sub_id:
+            cancel_paypal_subscription(sub_id)
+            
         c.execute("DELETE FROM user_sessions WHERE user_id = %s", (user_id,))
         c.execute("DELETE FROM password_reset_tokens WHERE user_id = %s", (user_id,))
         c.execute("DELETE FROM transactions WHERE user_id = %s", (user_id,))
