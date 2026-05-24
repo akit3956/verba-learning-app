@@ -24,7 +24,13 @@ async def tutor_chat(req: ChatRequest, current_user: dict = Depends(get_current_
     context_str = format_teacher_notes(context_chunks)
     
     # 2. Get the specific system prompt for the tutor
-    system_prompt = get_tutor_system_prompt()
+    user_name = current_user.get("username", "")
+    if not user_name and "email" in current_user:
+        user_name = current_user["email"].split("@")[0]
+    if not user_name:
+        user_name = "学習者"
+        
+    system_prompt = get_tutor_system_prompt(user_name)
     if context_str:
         system_prompt += f"\n\n### 【Aki先生の指導メソッド（RAG資料）】\n{context_str}"
 
