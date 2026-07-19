@@ -1,10 +1,9 @@
 import API_BASE_URL from "./api_config";
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Home, PenTool, Wallet as WalletIcon, LogOut, LayoutDashboard, MessageCircle } from 'lucide-react';
+import { Home, PenTool, LogOut, LayoutDashboard, MessageCircle } from 'lucide-react';
 import Quiz from './pages/Quiz';
 import MaterialGenerator from './pages/MaterialGenerator';
-import Wallet from './pages/Wallet';
 import Auth from './pages/Auth';
 import ResetPassword from './pages/ResetPassword';
 import AdminDashboard from './pages/AdminDashboard';
@@ -47,9 +46,7 @@ function NavBar({ onLogout, userPlan, usage }) {
         <Link to="/tutor" className={getLinkStyle('/tutor')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
           <MessageCircle size={20} /> AI Tutor
         </Link>
-        <Link to="/wallet" className={getLinkStyle('/wallet')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
-          <WalletIcon size={20} /> Wallet
-        </Link>
+
         {!isStandard && (
           <Link to="/admin" className={getLinkStyle('/admin')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
             <LayoutDashboard size={20} /> Admin
@@ -113,6 +110,12 @@ function App() {
   const [userPlan, setUserPlan] = useState('standard');
   const [usage, setUsage] = useState(null);
 
+  const handleLogout = React.useCallback(() => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setUserPlan('standard');
+  }, []);
+
   const fetchUsage = React.useCallback(async () => {
     if (!token) return;
     try {
@@ -122,11 +125,13 @@ function App() {
       if (res.ok) {
         const data = await res.json();
         setUsage(data);
+      } else if (res.status === 401) {
+        handleLogout();
       }
     } catch (err) {
       console.error("Failed to fetch usage:", err);
     }
-  }, [token]);
+  }, [token, handleLogout]);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -138,6 +143,8 @@ function App() {
         if (res.ok) {
           const data = await res.json();
           setUserPlan(data.plan_type || 'standard');
+        } else if (res.status === 401) {
+          handleLogout();
         }
       } catch (err) {
         console.error("Failed to fetch plan:", err);
@@ -149,17 +156,11 @@ function App() {
     // Refresh usage occasionally
     const interval = setInterval(fetchUsage, 60000); 
     return () => clearInterval(interval);
-  }, [token, fetchUsage]);
+  }, [token, fetchUsage, handleLogout]);
 
   const handleLogin = (newToken) => {
     setToken(newToken);
     localStorage.setItem('token', newToken);
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUserPlan('standard');
   };
 
   return (
@@ -188,7 +189,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Quiz userPlan={userPlan} onUsageUpdate={fetchUsage} />} />
               <Route path="/generator" element={<MaterialGenerator userPlan={userPlan} />} />
-              <Route path="/wallet" element={<Wallet />} />
+
               <Route path="/upgrade" element={<Upgrade />} />
               <Route path="/tutor" element={<Tutor userPlan={userPlan} onUsageUpdate={fetchUsage} />} />
               <Route path="/inquiry" element={<Inquiry />} />
