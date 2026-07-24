@@ -1,1 +1,1 @@
-from . import auth, materials, wallet, tutor
+from . import auth, tutor

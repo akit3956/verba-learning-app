@@ -60,13 +60,14 @@ const Upgrade = () => {
     const [loading, setLoading] = useState(false);
     const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [successMessage, setSuccessMessage] = useState(null);
+    const [error, setError] = useState(null);
 
     const handleUpgradePlan = async (details, planType) => {
         setLoading(true);
         setError(null);
         try {
             const token = localStorage.getItem('token');
-            const res = await fetch(`${API_BASE_URL}/api/wallet/upgrade-plan`, {
+            const res = await fetch(`${API_BASE_URL}/auth/upgrade-plan`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -80,44 +81,13 @@ const Upgrade = () => {
             });
 
             if (!res.ok) throw new Error(`Failed to upgrade to ${planType} on the server.`);
-            
+
             setSuccessMessage(`Successfully upgraded to ${planType.toUpperCase()}! Welcome to the club.`);
-            
+
             setTimeout(() => {
                 navigate('/');
                 window.location.reload();
             }, 3000);
-        } catch (err) {
-            setError(err.message);
-            setLoading(false);
-        }
-    };
-
-    const handlePurchaseVRB = async (details, amountUSD, vrbTokens) => {
-        setLoading(true);
-        setError(null);
-        try {
-            const token = localStorage.getItem('token');
-            const res = await fetch(`${API_BASE_URL}/api/wallet/purchase-tokens`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    paypal_order_id: details.id,
-                    amount_usd: amountUSD,
-                    tokens_granted: vrbTokens
-                })
-            });
-
-            if (!res.ok) throw new Error("Failed to grant VRB tokens on the server.");
-            
-            setSuccessMessage(`Successfully purchased ${vrbTokens} VRB!`);
-            
-            setTimeout(() => {
-                navigate('/wallet');
-            }, 2000);
         } catch (err) {
             setError(err.message);
             setLoading(false);
@@ -131,7 +101,7 @@ const Upgrade = () => {
                     <h2 className="text-3xl font-bold text-slate-800 mb-4 flex items-center justify-center gap-2">
                         <Sparkles className="text-indigo-500" /> Account Upgrade
                     </h2>
-                    <p className="text-slate-600">Upgrade your plan to unlock more features, or buy VRB tokens to use directly in the app.</p>
+                    <p className="text-slate-600">Upgrade your plan to unlock more features.</p>
                 </div>
 
                 {error && (
@@ -153,53 +123,7 @@ const Upgrade = () => {
                         <div className="text-xl text-indigo-600 font-bold animate-pulse">Processing your transaction...</div>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        
-                        {/* Token Purchase Section */}
-                        <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200 flex flex-col hover:shadow-md transition-shadow">
-                            <div className="mb-6">
-                                <div className="text-emerald-600 bg-emerald-50 inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mb-4 tracking-tighter">Token Pack</div>
-                                <div className="flex items-baseline gap-1">
-                                    <span className="text-3xl font-bold text-slate-800">$5.00</span>
-                                </div>
-                                <p className="text-slate-500 text-sm mt-1">One-time purchase</p>
-                            </div>
-                            
-                            <ul className="space-y-3 mb-6 flex-1 text-sm">
-                                <li className="flex gap-2 text-slate-600">
-                                    <Star size={14} className="text-emerald-600 shrink-0 mt-0.5" />
-                                    500 VRB Tokens
-                                </li>
-                                <li className="flex gap-2 text-slate-600">
-                                    <Check size={14} className="text-slate-600 shrink-0 mt-0.5" />
-                                    Access to all AI Quizzes
-                                </li>
-                            </ul>
-                            
-                            <div className="mb-4">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
-                                        className="rounded border-slate-300"
-                                        checked={agreedToTerms}
-                                        onChange={() => setAgreedToTerms(!agreedToTerms)}
-                                    />
-                                    <span className="text-[10px] text-slate-500">Agree to Terms</span>
-                                </label>
-                            </div>
-
-                            {agreedToTerms ? (
-                                <PayPalButton 
-                                    amount="5.00" 
-                                    onApprove={(details) => handlePurchaseVRB(details, 5.00, 500)} 
-                                    onError={(err) => setError("PayPal transaction failed.")}
-                                />
-                            ) : (
-                                <button className="w-full py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 font-bold text-sm cursor-not-allowed">
-                                    PayPal
-                                </button>
-                            )}
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
                         {/* Pro Upgrade Section */}
                         <div className="bg-gradient-to-b from-indigo-50 to-white p-6 rounded-3xl shadow-md border border-indigo-100 flex flex-col hover:shadow-lg transition-shadow">
@@ -263,7 +187,7 @@ const Upgrade = () => {
                             <ul className="space-y-3 mb-6 flex-1 text-sm relative z-10">
                                 <li className="flex gap-2 text-indigo-100">
                                     <Shield size={14} className="text-indigo-400 shrink-0 mt-0.5" />
-                                    1 Year Pro + 10k VRB
+                                    1 Year Pro
                                 </li>
                                 <li className="flex gap-2 text-indigo-100">
                                     <Star size={14} className="text-indigo-400 shrink-0 mt-0.5" />

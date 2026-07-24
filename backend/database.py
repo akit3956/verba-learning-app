@@ -1,9 +1,6 @@
 import psycopg2
 import psycopg2.extras
 import os
-from pydantic import BaseModel
-from typing import List, Optional
-from datetime import datetime
 from dotenv import load_dotenv
 
 import bcrypt
@@ -38,6 +35,8 @@ def init_db():
             password_hash TEXT,
             vrb_balance INTEGER DEFAULT 0,
             nationality TEXT,
+            full_name TEXT,
+            address TEXT,
             plan_type TEXT DEFAULT 'standard',
             registration_ip TEXT,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -115,6 +114,20 @@ def init_db():
             conn.rollback()
             pass
             
+    if "full_name" not in columns:
+        try:
+            c.execute("ALTER TABLE users ADD COLUMN full_name TEXT")
+        except Exception:
+            conn.rollback()
+            pass
+            
+    if "address" not in columns:
+        try:
+            c.execute("ALTER TABLE users ADD COLUMN address TEXT")
+        except Exception:
+            conn.rollback()
+            pass
+            
     # Check if created_at exists (From LP integration)
     if "created_at" not in columns:
         try:
@@ -188,16 +201,3 @@ def init_db():
     c.close()
     conn.close()
 
-# Pydantic Models for DB interactions
-class Transaction(BaseModel):
-    id: int
-    user_id: str
-    amount: int
-    type: str
-    description: str
-    timestamp: str
-
-class UserBalance(BaseModel):
-    user_id: str
-    username: str
-    balance: int

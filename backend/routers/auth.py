@@ -30,6 +30,8 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 class UserCreate(BaseModel):
     email: str
     username: str
+    full_name: str
+    address: str
     password: str
     is_founder: bool = False
     plan_type: str = "standard"
@@ -42,7 +44,6 @@ class Token(BaseModel):
 class UserResponse(BaseModel):
     id: str
     username: str
-    vrb_balance: int
     plan_type: str = "standard"
 
 class ForgotPasswordRequest(BaseModel):
@@ -56,7 +57,6 @@ class AdminUserResponse(BaseModel):
     id: str
     username: Optional[str] = None
     email: Optional[str] = None
-    vrb_balance: int
     created_at: Optional[datetime] = None
 
 def verify_password(plain_password, hashed_password):
@@ -156,10 +156,9 @@ async def register(user: UserCreate, request: Request):
 
         user_id = str(uuid.uuid4())
         hashed_password = get_password_hash(user.password)
-        initial_bonus = 10000 if plan_type == 'founder' else 0
-        
-        c.execute("INSERT INTO users (id, email, username, password_hash, vrb_balance, plan_type, registration_ip, paypal_subscription_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
-                  (user_id, user.email, user.username, hashed_password, initial_bonus, plan_type, client_ip, user.paypal_subscription_id))
+
+        c.execute("INSERT INTO users (id, email, username, full_name, address, password_hash, plan_type, registration_ip, paypal_subscription_id) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                  (user_id, user.email, user.username, user.full_name, user.address, hashed_password, plan_type, client_ip, user.paypal_subscription_id))
         
         # Log subscription
         if user.paypal_subscription_id:
@@ -244,7 +243,6 @@ async def read_users_me(current_user: dict = Depends(get_current_user)):
     return UserResponse(
         id=current_user["id"],
         username=current_user["username"],
-        vrb_balance=current_user["vrb_balance"],
         plan_type=current_user.get("plan_type", "standard")
     )
 
@@ -333,18 +331,17 @@ async def get_all_users(current_user: dict = Depends(get_current_user)):
     conn = get_db_connection()
     c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
     
-    c.execute("SELECT id, username, email, vrb_balance, created_at FROM users ORDER BY created_at DESC")
+    c.execute("SELECT id, username, email, created_at FROM users ORDER BY created_at DESC")
     users = c.fetchall()
-    
+
     c.close()
     conn.close()
-    
+
     return [
         AdminUserResponse(
             id=u["id"],
             username=u["username"],
             email=u["email"],
-            vrb_balance=u["vrb_balance"] if u["vrb_balance"] is not None else 0,
             created_at=u["created_at"]
         ) for u in users
     ]
@@ -386,6 +383,47 @@ async def export_users_csv(current_user: dict = Depends(get_current_user)):
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=verba_users_export.csv"}
     )
+
+
+class UpgradePlanRequest(BaseModel):
+    paypal_order_id: str
+    paypal_subscription_id: Optional[str] = None
+    plan_type: str
+
+@router.post("/upgrade-plan")
+async def upgrade_plan(req: UpgradePlanRequest, current_user: dict = Depends(get_current_user)):
+    user_id = current_user["id"]
+
+    if req.plan_type not in ["pro", "founder"]:
+        raise HTTPException(status_code=400, detail="Invalid plan type requested for upgrade.")
+
+    conn = get_db_connection()
+    c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    c.execute("""
+        UPDATE users
+        SET plan_type = %s, paypal_subscription_id = %s
+        WHERE id = %s
+        RETURNING plan_type, paypal_subscription_id
+    """, (req.plan_type, req.paypal_subscription_id, user_id))
+    updated_user = c.fetchone()
+
+    if req.paypal_subscription_id:
+        print(f"User {user_id} upgraded to {req.plan_type} with Subscription: {req.paypal_subscription_id}")
+    else:
+        print(f"User {user_id} upgraded to {req.plan_type} with Order: {req.paypal_order_id}")
+
+    if not updated_user:
+        conn.rollback()
+        c.close()
+        conn.close()
+        raise HTTPException(status_code=404, detail="User not found for plan upgrade.")
+
+    conn.commit()
+    c.close()
+    conn.close()
+
+    return {"status": "success", "new_plan": updated_user["plan_type"]}
 
 
 def cancel_paypal_subscription(subscription_id: str):

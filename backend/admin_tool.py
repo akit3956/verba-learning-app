@@ -16,20 +16,19 @@ def main():
         conn = psycopg2.connect(db_url)
         c = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
         
-        c.execute("SELECT id, email, username, vrb_balance, created_at FROM users ORDER BY created_at DESC")
+        c.execute("SELECT id, email, username, created_at FROM users ORDER BY created_at DESC")
         users = c.fetchall()
-        
+
         print(f"\n{'='*60}")
         print(f" TOTAL REGISTERED ACCOUNTS: {len(users)}")
         print(f"{'='*60}")
-        print(f"{'Username':<20} | {'Email':<30} | {'VRB Balance'}")
+        print(f"{'Username':<20} | {'Email':<30}")
         print("-" * 60)
-        
+
         for user in users:
             email_display = user['email'] if user['email'] else "N/A"
             username_display = user['username'] if user['username'] else "N/A"
-            balance = user['vrb_balance'] if user['vrb_balance'] is not None else 0
-            print(f"{username_display:<20} | {email_display:<30} | {balance}")
+            print(f"{username_display:<20} | {email_display:<30}")
             
         print(f"{'='*60}\n")
         

@@ -13,7 +13,7 @@ from openai import AsyncOpenAI
 from google import genai
 from prompts import get_quiz_prompt, get_aki_style_prompt
 
-from routers import wallet, materials, auth, tutor
+from routers import auth, tutor
 from routers.auth import get_current_user
 from usage_utils import check_and_increment_usage
 import smtplib
@@ -58,8 +58,6 @@ app = FastAPI(lifespan=lifespan)
 
 # Include Routers
 app.include_router(auth.router)
-app.include_router(wallet.router)
-app.include_router(materials.router)
 app.include_router(tutor.router)
 
 # CORS configuration

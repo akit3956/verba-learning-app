@@ -1,9 +1,8 @@
 import API_BASE_URL from "./api_config";
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Home, PenTool, LogOut, LayoutDashboard, MessageCircle } from 'lucide-react';
+import { Home, LogOut, LayoutDashboard, MessageCircle } from 'lucide-react';
 import Quiz from './pages/Quiz';
-import MaterialGenerator from './pages/MaterialGenerator';
 import Auth from './pages/Auth';
 import ResetPassword from './pages/ResetPassword';
 import AdminDashboard from './pages/AdminDashboard';
@@ -38,11 +37,6 @@ function NavBar({ onLogout, userPlan, usage }) {
         <Link to="/" className={getLinkStyle('/')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
           <Home size={20} /> JLPT Quiz
         </Link>
-        {!isStandard && (
-          <Link to="/generator" className={getLinkStyle('/generator')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
-            <PenTool size={20} /> Teacher Tools
-          </Link>
-        )}
         <Link to="/tutor" className={getLinkStyle('/tutor')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
           <MessageCircle size={20} /> AI Tutor
         </Link>
@@ -188,8 +182,6 @@ function App() {
           <div className="content-wrapper">
             <Routes>
               <Route path="/" element={<Quiz userPlan={userPlan} onUsageUpdate={fetchUsage} />} />
-              <Route path="/generator" element={<MaterialGenerator userPlan={userPlan} />} />
-
               <Route path="/upgrade" element={<Upgrade />} />
               <Route path="/tutor" element={<Tutor userPlan={userPlan} onUsageUpdate={fetchUsage} />} />
               <Route path="/inquiry" element={<Inquiry />} />

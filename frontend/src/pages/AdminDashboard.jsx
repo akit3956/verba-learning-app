@@ -240,7 +240,6 @@ const AdminDashboard = () => {
                                 <tr>
                                     <th style={styles.th}>Username</th>
                                     <th style={styles.th}>Email</th>
-                                    <th style={styles.th}>VRB Balance</th>
                                     <th style={styles.th}>Joined At</th>
                                 </tr>
                             </thead>
@@ -249,9 +248,6 @@ const AdminDashboard = () => {
                                     <tr key={user.id} style={styles.tr}>
                                         <td style={styles.td}><strong>{user.username || 'N/A'}</strong></td>
                                         <td style={styles.td}>{user.email || 'N/A'}</td>
-                                        <td style={styles.td}>
-                                            <span style={styles.badge}>{user.vrb_balance} VRB</span>
-                                        </td>
                                         <td style={styles.td}>
                                             {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
                                         </td>

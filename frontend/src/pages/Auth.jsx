@@ -6,7 +6,8 @@ const Auth = ({ onLogin }) => {
     const [isLogin, setIsLogin] = useState(true);
     const [isForgotPassword, setIsForgotPassword] = useState(false);
     const [email, setEmail] = useState('');
-    const [username, setUsername] = useState('');
+    const [fullName, setFullName] = useState('');
+    const [address, setAddress] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [successMsg, setSuccessMsg] = useState('');
@@ -50,7 +51,7 @@ const Auth = ({ onLogin }) => {
                 return;
             }
         } else {
-            if (!email || !username || !password) {
+            if (!email || !fullName || !address || !password) {
                 setError('Please fill in all fields');
                 return;
             }
@@ -89,7 +90,9 @@ const Auth = ({ onLogin }) => {
             } else {
                 body = JSON.stringify({ 
                     email, 
-                    username, 
+                    username: fullName, // mapping fullName to username to avoid backend break temporarily, or just send full_name
+                    full_name: fullName,
+                    address,
                     password, 
                     plan_type: planType,
                     is_founder: planType === 'founder',
@@ -143,7 +146,7 @@ const Auth = ({ onLogin }) => {
                             ? 'Enter your email to receive a password reset link'
                             : (isLogin
                                 ? 'Sign in to continue your JLPT learning journey'
-                                : 'Sign up to start learning and earning VRB Tokens')}
+                                : 'Sign up to start your JLPT learning journey')}
                     </p>
                 </div>
 
@@ -163,18 +166,32 @@ const Auth = ({ onLogin }) => {
 
                 <form onSubmit={handleSubmit} style={styles.form}>
                     {(!isLogin && !isForgotPassword) && (
-                        <div style={styles.inputGroup}>
-                            <div style={styles.inputIconWrapper}>
-                                <User size={18} style={styles.inputIcon} />
+                        <>
+                            <div style={styles.inputGroup}>
+                                <div style={styles.inputIconWrapper}>
+                                    <User size={18} style={styles.inputIcon} />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Full Name (お名前)"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                    style={styles.input}
+                                />
                             </div>
-                            <input
-                                type="text"
-                                placeholder="Display Name / Username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                style={styles.input}
-                            />
-                        </div>
+                            <div style={styles.inputGroup}>
+                                <div style={styles.inputIconWrapper}>
+                                    <User size={18} style={styles.inputIcon} />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Address (住所)"
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    style={styles.input}
+                                />
+                            </div>
+                        </>
                     )}
 
                     <div style={styles.inputGroup}>

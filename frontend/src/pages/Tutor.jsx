@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import API_BASE_URL from "../api_config";
-import { Send, User, MessageCircle, RefreshCw, BookOpen, Gift, MessageSquare } from 'lucide-react';
+import { Send, User, MessageCircle, RefreshCw, BookOpen, MessageSquare } from 'lucide-react';
 
 const Tutor = ({ userPlan, onUsageUpdate }) => {
     const [messages, setMessages] = useState([
@@ -14,8 +14,6 @@ const Tutor = ({ userPlan, onUsageUpdate }) => {
     // --- 90s UX & KPI States ---
     const [showSafetyMsg, setShowSafetyMsg] = useState(false);
     const [showDiscordCTA, setShowDiscordCTA] = useState(false);
-    const [earnedTokens, setEarnedTokens] = useState(0);
-    const [showTokenAnim, setShowTokenAnim] = useState(false);
 
     const kpiRef = useRef({
         firstMsgTime: null,
@@ -131,11 +129,6 @@ const Tutor = ({ userPlan, onUsageUpdate }) => {
             
             if (onUsageUpdate) onUsageUpdate();
 
-            // L2E Web3 Onboarding Animation (+10 $VRB)
-            setEarnedTokens(prev => prev + 10);
-            setShowTokenAnim(true);
-            setTimeout(() => setShowTokenAnim(false), 3000);
-
         } catch (err) {
             console.error(err);
             clearTimeout(safetyTimer);
@@ -158,25 +151,7 @@ const Tutor = ({ userPlan, onUsageUpdate }) => {
                         </p>
                     </div>
                 </div>
-                {/* L2E Token Display */}
-                <div style={{ background: 'rgba(255,255,255,0.2)', padding: '5px 12px', borderRadius: '20px', display: 'flex', alignItems: 'center', gap: '5px', fontWeight: 'bold' }}>
-                    <Gift size={16} /> 
-                    <span>{earnedTokens} $VRB</span>
-                    {showTokenAnim && (
-                        <span style={{ position: 'absolute', top: '30px', right: '30px', color: '#fbbf24', fontWeight: 'bold', animation: 'floatUp 2s forwards' }}>
-                            +10 $VRB ✨
-                        </span>
-                    )}
-                </div>
             </div>
-
-            {/* Custom CSS for animation */}
-            <style>{`
-                @keyframes floatUp {
-                    0% { transform: translateY(0); opacity: 1; }
-                    100% { transform: translateY(-30px); opacity: 0; }
-                }
-            `}</style>
 
             <div className="chat-messages" style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', background: '#f9f9fb' }}>
                 {messages.map((msg, idx) => (

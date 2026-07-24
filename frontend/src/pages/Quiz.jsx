@@ -19,7 +19,6 @@ function Quiz({ userPlan, onUsageUpdate }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [results, setResults] = useState([]);
     const [showResults, setShowResults] = useState(false);
-    const [earnedToken, setEarnedToken] = useState(0); // New state
 
     const [error, setError] = useState('');
     const [answered, setAnswered] = useState(false);
@@ -155,28 +154,6 @@ function Quiz({ userPlan, onUsageUpdate }) {
             updated[currentIndex] = newResult;
             return updated;
         });
-
-        // Grant reward immediately if correct
-        if (isCorrect) {
-            const rewardPerQuestion = 1;
-            try {
-                const token = localStorage.getItem('token');
-                fetch(API_BASE_URL + '/api/wallet/reward', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        amount: rewardPerQuestion,
-                        description: `Quiz Reward: ${category} ${level}`
-                    })
-                });
-                setEarnedToken(prev => prev + rewardPerQuestion);
-            } catch (e) {
-                console.error("Instant reward failed", e);
-            }
-        }
     };
 
     const handleFinish = async () => {
@@ -202,7 +179,6 @@ function Quiz({ userPlan, onUsageUpdate }) {
         setResults([]);
         setCurrentIndex(0);
         setShowResults(false);
-        setEarnedToken(0);
         setAnswered(false);
         setSelectedAnswer(null);
     };
@@ -405,13 +381,11 @@ function Quiz({ userPlan, onUsageUpdate }) {
                 showResults && (
                     <ResultSummary
                         results={results}
-                        earnedToken={earnedToken}
                         onRetry={handleGenerate}
                         onRetryMistakes={handleRetryMistakes}
                         onHome={() => {
                             setQuestionQueue([]);
                             setShowResults(false);
-                            setEarnedToken(0);
                         }}
                     />
                 )

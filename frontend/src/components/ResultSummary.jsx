@@ -1,7 +1,7 @@
 import React from 'react';
 import { CheckCircle, XCircle, RotateCcw, Sparkles } from 'lucide-react';
 
-const ResultSummary = ({ results, earnedToken, onRetry, onRetryMistakes, onHome }) => {
+const ResultSummary = ({ results, onRetry, onRetryMistakes, onHome }) => {
     const [viewMode, setViewMode] = React.useState('student'); // 'student' or 'teacher'
     const correctCount = results.filter(r => r.isCorrect).length;
     const total = results.length;
@@ -43,11 +43,25 @@ const ResultSummary = ({ results, earnedToken, onRetry, onRetryMistakes, onHome 
                 {correctCount} / {total}
             </div>
 
-            {earnedToken > 0 && (
-                <div style={{ fontSize: '1.2rem', color: '#718096', marginBottom: '2rem' }}>
-                    Token Earned: <span style={{ color: '#38a169', fontWeight: 'bold' }}>+{earnedToken} VRB</span>
+            {/* AkiLads Promotion Banner */}
+            <div style={{
+                background: 'linear-gradient(135deg, #f6e05e, #ecc94b)',
+                borderRadius: '12px',
+                padding: '1.5rem',
+                marginBottom: '2rem',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                textAlign: 'center',
+                color: '#744210',
+                cursor: 'pointer'
+            }} onClick={() => window.open('https://example.com/akilads', '_blank')}>
+                <h3 style={{ margin: 0, fontSize: '1.5rem' }}>🚀 もっと本格的に学ぶなら？</h3>
+                <p style={{ margin: '0.5rem 0 0 0', fontWeight: 'bold' }}>
+                    AkiLads JLPT教材で合格を確実なものにしよう！
+                </p>
+                <div style={{ marginTop: '1rem', background: '#fff', padding: '0.5rem 1rem', borderRadius: '20px', display: 'inline-block', fontWeight: 'bold', color: '#b7791f' }}>
+                    詳しく見る →
                 </div>
-            )}
+            </div>
 
             {/* Score Analysis Card */}
             <div style={{

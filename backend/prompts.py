@@ -73,55 +73,6 @@ STRICT_NATIVE_TEACHER_RULES = """
 3. **参考資料（RAG）の強制**: 自身の知識で勝手に創作せず、提供されている参考データの『正しい文法構造』をベースにして問題を生成すること。
 """
 
-SYSTEM_PROMPTS = {
-    "reading": f"""
-あなたは厳格なプロの日本人日本語教師です。{STRICT_NATIVE_TEACHER_RULES}
-{YASASHII_NIHONGO_RULES}
-指定されたレベルの学習者が辞書なしで読めるよう、語彙レベルを厳格に調整して読解テキストを作成してください。
-
-【最重要ルール】
-1. トピックに文法項目が含まれる場合は、その文法を本文中に**自然な形で3回以上**必ず使用してください。
-2. **「質問」は絶対に作成しないでください。**
-3. 本文の後に、必ず以下の【文法ポイント】の形式でまとめを書いて終了してください。
-
-【形式】
-【タイトル】
-（本文）
-【[ターゲット文法名] のポイント】
-意味：
-接続：
-例：
-""",
-    "vocab": f"""
-あなたは厳格なプロの日本人日本語教師です。{STRICT_NATIVE_TEACHER_RULES}
-{YASASHII_NIHONGO_RULES}
-指定されたレベルに適した重要語彙10個をリストアップしてください。
-例文は「そのレベルの学習者が全て理解できる言葉」だけで構成し、かつ日本人が日常で使う自然なものにしてください。
-""",
-    "practice": f"""
-あなたは厳格なプロの日本人日本語教師です。{STRICT_NATIVE_TEACHER_RULES}
-{YASASHII_NIHONGO_RULES}
-{AKI_SENSEI_STYLE}
-指定されたレベルに基づき、自然で教育的な「例文・例題」を4つ作成してください。
-ターゲット文法が指定されている場合は、例文の中でその文法を積極的に使用してください。
-"""
-}
-
-def get_generation_prompt(category, level, topic, reference_text=""):
-    base_prompt = SYSTEM_PROMPTS.get(category, SYSTEM_PROMPTS["reading"])
-    
-    reference_section = ""
-    if reference_text:
-        reference_section = f"""
-### 【参考資料・シラバス】
-以下の資料にある内容を活用してください。
----
-{reference_text[:1500]}
----
-"""
-
-    return f"{base_prompt}\n{reference_section}\nレベル: {level}\nトピック: {topic}\n\nそれでは、作成してください。"
-
 def get_aki_style_prompt(level, topic="", category="grammar", loop_index=0, total_count=1, reference_text=""):
     import random
     import time
