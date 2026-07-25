@@ -44,7 +44,9 @@ class Token(BaseModel):
 class UserResponse(BaseModel):
     id: str
     username: str
+    email: Optional[str] = None
     plan_type: str = "standard"
+    created_at: Optional[datetime] = None
 
 class ForgotPasswordRequest(BaseModel):
     email: str
@@ -243,7 +245,9 @@ async def read_users_me(current_user: dict = Depends(get_current_user)):
     return UserResponse(
         id=current_user["id"],
         username=current_user["username"],
-        plan_type=current_user.get("plan_type", "standard")
+        email=current_user.get("email"),
+        plan_type=current_user.get("plan_type", "standard"),
+        created_at=current_user.get("created_at")
     )
 
 @router.get("/usage")

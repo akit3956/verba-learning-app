@@ -1,11 +1,12 @@
 import API_BASE_URL from "./api_config";
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
-import { Home, LogOut, LayoutDashboard, MessageCircle } from 'lucide-react';
+import { Home, LogOut, LayoutDashboard, MessageCircle, User } from 'lucide-react';
 import Quiz from './pages/Quiz';
 import Auth from './pages/Auth';
 import ResetPassword from './pages/ResetPassword';
 import AdminDashboard from './pages/AdminDashboard';
+import Dashboard from './pages/Dashboard';
 import Tutor from './pages/Tutor';
 import Landing from './pages/Landing';
 import Inquiry from './pages/Inquiry';
@@ -48,6 +49,9 @@ function NavBar({ onLogout, userPlan, usage }) {
         )}
         <Link to="/inquiry" className={getLinkStyle('/inquiry')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
           <MessageCircle size={20} /> Contact
+        </Link>
+        <Link to="/dashboard" className={getLinkStyle('/dashboard')} style={{ textDecoration: 'none', color: '#4a5568', display: 'flex', alignItems: 'center', gap: 5, padding: '8px 16px', borderRadius: 8 }}>
+          <User size={20} /> Account
         </Link>
       </div>
 
@@ -186,6 +190,7 @@ function App() {
               <Route path="/tutor" element={<Tutor userPlan={userPlan} onUsageUpdate={fetchUsage} />} />
               <Route path="/inquiry" element={<Inquiry />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
