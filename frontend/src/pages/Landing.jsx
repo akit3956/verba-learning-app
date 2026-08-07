@@ -71,6 +71,7 @@ const Landing = () => {
     <a href="#how-it-works">How it works</a>
     <a href="#pricing">Pricing</a>
     <a href="#faq">FAQ</a>
+    <Link to="/inquiry">Contact</Link>
     <Link to="/auth" style={{marginRight: '1rem', fontWeight: 600, color: 'var(--text)', textDecoration: 'none'}}>Log in</Link>
     <Link to="/auth" className="btn-nav">Start for Free →</Link>
   </div>
@@ -376,7 +377,7 @@ const Landing = () => {
   <div className="footer-links">
     <a href="#">Twitter</a>
     <a href="#">Discord</a>
-    <a href="#">Contact</a>
+    <Link to="/inquiry">Contact</Link>
     <a href="#">Privacy</a>
   </div>
   <span>© 2026 Verba Technologies. All rights reserved.</span>
