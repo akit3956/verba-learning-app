@@ -10,4 +10,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Ping production backend
-        run: curl -sf --max-time 60 https://verba-learning-app.onrender.com/models
+        run: curl -sf --max-time 120 https://verba-learning-app.onrender.com/models
