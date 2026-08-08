@@ -16,9 +16,6 @@ from prompts import get_quiz_prompt, get_aki_style_prompt
 from routers import auth, tutor
 from routers.auth import get_current_user
 from usage_utils import check_and_increment_usage
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 import config
 from pdf_utils import get_random_page_image
 from pdf_context import load_context_for_level
@@ -547,34 +544,36 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
 @app.post("/api/inquiry")
 async def send_inquiry(req: InquiryRequest):
     recipient = os.getenv("INQUIRY_RECIPIENT_EMAIL", "aki.t901@gmail.com")
-    smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    smtp_user = os.getenv("SMTP_USER")
-    smtp_pass = os.getenv("SMTP_PASS")
-    
-    if not smtp_user or not smtp_pass:
-        # Fallback to logging if SMTP not configured yet
+    resend_api_key = os.getenv("RESEND_API_KEY")
+
+    if not resend_api_key:
+        # Fallback to logging if Resend isn't configured yet
         print(f"\n[INQUIRY LOG] From: {req.email} ({req.name})")
         print(f"Subject: {req.subject}")
         print(f"Message: {req.message}\n")
         return {"message": "お問い合わせを送信しました（管理者ログに記録）"}
 
     try:
-        msg = MIMEMultipart()
-        msg['From'] = smtp_user
-        msg['To'] = recipient
-        msg['Subject'] = f"[Verba Inquiry] {req.subject}"
-        
         body = f"Name: {req.name}\nEmail: {req.email}\n\nMessage:\n{req.message}"
-        msg.attach(MIMEText(body, 'plain'))
-        
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()
-        server.login(smtp_user, smtp_pass)
-        server.send_message(msg)
-        server.quit()
-        
+        async with httpx.AsyncClient(timeout=15.0) as client:
+            res = await client.post(
+                "https://api.resend.com/emails",
+                headers={"Authorization": f"Bearer {resend_api_key}"},
+                json={
+                    "from": "Verba Inquiry <onboarding@resend.dev>",
+                    "to": [recipient],
+                    "reply_to": req.email,
+                    "subject": f"[Verba Inquiry] {req.subject}",
+                    "text": body,
+                }
+            )
+        if res.status_code >= 400:
+            print(f"Resend API Error: {res.status_code} {res.text}")
+            raise HTTPException(status_code=500, detail="メールの送信に失敗しました。")
+
         return {"message": "お問い合わせを送信しました。"}
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Inquiry Email Error: {e}")
         raise HTTPException(status_code=500, detail="メールの送信に失敗しました。")
