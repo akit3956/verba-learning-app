@@ -3,13 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { LogIn, UserPlus, Lock, User, AlertCircle, Sparkles, Mail } from 'lucide-react';
 
 const Auth = ({ onLogin }) => {
-    const [isLogin, setIsLogin] = useState(true);
+    const [isLogin, setIsLogin] = useState(false);
     const [isForgotPassword, setIsForgotPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [fullName, setFullName] = useState('');
-    const [address, setAddress] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [emailAlreadyExists, setEmailAlreadyExists] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
     const [loading, setLoading] = useState(false);
     const [planType, setPlanType] = useState('standard');
@@ -20,11 +20,18 @@ const Auth = ({ onLogin }) => {
         const params = new URLSearchParams(window.location.search);
         const plan = params.get('plan');
         const payment = params.get('payment');
+        const mode = params.get('mode');
+
+        if (mode === 'login') {
+            setIsLogin(true);
+        } else if (mode === 'signup') {
+            setIsLogin(false);
+        }
 
         if (plan) {
             setPlanType(plan);
             if (plan !== 'standard') {
-                setIsLogin(false); // Force Sign Up for paid plans
+                setIsLogin(false); // Force Sign Up for paid plans (overrides ?mode)
             }
         }
 
@@ -39,6 +46,7 @@ const Auth = ({ onLogin }) => {
         e.preventDefault();
         setError('');
         setSuccessMsg('');
+        setEmailAlreadyExists(false);
 
         if (isForgotPassword) {
             if (!email) {
@@ -51,7 +59,7 @@ const Auth = ({ onLogin }) => {
                 return;
             }
         } else {
-            if (!email || !fullName || !address || !password) {
+            if (!email || !fullName || !password) {
                 setError('Please fill in all fields');
                 return;
             }
@@ -88,12 +96,11 @@ const Auth = ({ onLogin }) => {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 };
             } else {
-                body = JSON.stringify({ 
-                    email, 
+                body = JSON.stringify({
+                    email,
                     username: fullName, // mapping fullName to username to avoid backend break temporarily, or just send full_name
                     full_name: fullName,
-                    address,
-                    password, 
+                    password,
                     plan_type: planType,
                     is_founder: planType === 'founder',
                     paypal_subscription_id: subscriptionId
@@ -117,6 +124,9 @@ const Auth = ({ onLogin }) => {
             onLogin(data.access_token);
         } catch (err) {
             setError(err.message);
+            if (!isLogin && /already registered/i.test(err.message)) {
+                setEmailAlreadyExists(true);
+            }
         } finally {
             setLoading(false);
         }
@@ -153,10 +163,24 @@ const Auth = ({ onLogin }) => {
                 {error && (
                     <div style={styles.error}>
                         <AlertCircle size={18} />
-                        <span>{error}</span>
+                        <span>
+                            {error}
+                            {emailAlreadyExists && (
+                                <>
+                                    {' '}
+                                    <button
+                                        type="button"
+                                        onClick={() => { setIsLogin(true); setError(''); setEmailAlreadyExists(false); }}
+                                        style={{ background: 'none', border: 'none', color: '#2a7c6f', fontWeight: '600', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                                    >
+                                        Sign inへ
+                                    </button>
+                                </>
+                            )}
+                        </span>
                     </div>
                 )}
-                
+
                 {successMsg && (
                     <div style={{...styles.error, background: '#f0fff4', color: '#2f855a', borderColor: '#c6f6d5'}}>
                         <Sparkles size={18} />
@@ -166,32 +190,18 @@ const Auth = ({ onLogin }) => {
 
                 <form onSubmit={handleSubmit} style={styles.form}>
                     {(!isLogin && !isForgotPassword) && (
-                        <>
-                            <div style={styles.inputGroup}>
-                                <div style={styles.inputIconWrapper}>
-                                    <User size={18} style={styles.inputIcon} />
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Full Name (お名前)"
-                                    value={fullName}
-                                    onChange={(e) => setFullName(e.target.value)}
-                                    style={styles.input}
-                                />
+                        <div style={styles.inputGroup}>
+                            <div style={styles.inputIconWrapper}>
+                                <User size={18} style={styles.inputIcon} />
                             </div>
-                            <div style={styles.inputGroup}>
-                                <div style={styles.inputIconWrapper}>
-                                    <User size={18} style={styles.inputIcon} />
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Address (住所)"
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    style={styles.input}
-                                />
-                            </div>
-                        </>
+                            <input
+                                type="text"
+                                placeholder="Full Name (お名前)"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                style={styles.input}
+                            />
+                        </div>
                     )}
 
                     <div style={styles.inputGroup}>

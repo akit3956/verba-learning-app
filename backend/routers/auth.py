@@ -31,7 +31,7 @@ class UserCreate(BaseModel):
     email: str
     username: str
     full_name: str
-    address: str
+    address: Optional[str] = None
     password: str
     is_founder: bool = False
     plan_type: str = "standard"

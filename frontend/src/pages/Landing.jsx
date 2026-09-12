@@ -72,7 +72,7 @@ const Landing = () => {
     <a href="#pricing">Pricing</a>
     <a href="#faq">FAQ</a>
     <Link to="/inquiry">Contact</Link>
-    <Link to="/auth" style={{marginRight: '1rem', fontWeight: 600, color: 'var(--text)', textDecoration: 'none'}}>Log in</Link>
+    <Link to="/auth?mode=login" style={{marginRight: '1rem', fontWeight: 600, color: 'var(--text)', textDecoration: 'none'}}>Log in</Link>
     <Link to="/auth" className="btn-nav">Start for Free →</Link>
   </div>
 </nav>
