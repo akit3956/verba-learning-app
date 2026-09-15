@@ -1,45 +1,67 @@
 from fastapi import HTTPException
 from database import get_db_connection
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 
-def check_and_increment_usage(user_id: str, plan_type: str, limit: int = 4):
+JST = timezone(timedelta(hours=9))
+
+# A-0b: 月次利用上限（Free 20 / 有料 500）。リセットはJST基準で毎月1日。
+# founderはあえてキーを設けず上限なしのまま（Vee企画審査で維持方針を確認済み）。
+PLAN_MONTHLY_LIMITS = {
+    "standard": 20,  # Free
+    "pro": 500,      # 有料（$6.99/月）
+}
+
+
+def _today_jst() -> date:
+    return datetime.now(JST).date()
+
+
+def get_monthly_limit(plan_type: str):
+    """月次上限を返す。キーに無いプラン（founder等）はNone＝上限なし。"""
+    return PLAN_MONTHLY_LIMITS.get(plan_type)
+
+
+def check_and_increment_usage(user_id: str, plan_type: str):
     """
-    Checks if a user has exceeded their daily limit and increments the count.
-    Only applies to 'standard' users.
+    当月（JST基準）の利用回数をチェックし、カウントを増やす。
+    plan_typeに月次上限が設定されていない場合（founder等）は無制限。
     """
-    if plan_type != "standard":
-        return True # Unlimited for Pro/Founder
-    
+    limit = get_monthly_limit(plan_type)
+    if limit is None:
+        return True  # 上限なし
+
     conn = get_db_connection()
     if not conn:
         print("Warning: Skipping usage tracking because database is unreachable.")
         return True # Fail open
 
     c = conn.cursor()
-    today = date.today()
-    
+    today = _today_jst()
+
     try:
-        # Get or create today's usage record
+        # 日次テーブルはそのまま流用し、今日分をインクリメント
         c.execute("""
             INSERT INTO daily_usage (user_id, usage_date, total_count)
             VALUES (%s, %s, 1)
             ON CONFLICT (user_id, usage_date)
             DO UPDATE SET total_count = daily_usage.total_count + 1
-            RETURNING total_count
         """, (user_id, today))
-        
-        new_count = c.fetchone()[0]
-        
-        if new_count > limit:
-            # We already incremented, but since we are blocking, 
-            # we don't strictly need to roll back for such a small counter, 
-            # but if we want to be precise, we could.
+
+        # 当月合計（JST基準の月初〜今日）を集計して判定
+        c.execute("""
+            SELECT COALESCE(SUM(total_count), 0) FROM daily_usage
+            WHERE user_id = %s
+              AND DATE_TRUNC('month', usage_date) = DATE_TRUNC('month', %s::date)
+        """, (user_id, today))
+        month_count = c.fetchone()[0]
+
+        if month_count > limit:
             conn.commit()
             raise HTTPException(
-                status_code=403, 
-                detail=f"本日の無料利用枠（{limit}回）を超えました。Proプランにアップグレードして無制限に学びましょう！"
+                status_code=403,
+                detail=f"今月の利用枠（{limit}回）を超えました。プランをアップグレードしてもっと学びましょう！"
             )
-        
+
         conn.commit()
         return True
     except HTTPException:
@@ -53,14 +75,18 @@ def check_and_increment_usage(user_id: str, plan_type: str, limit: int = 4):
         conn.close()
 
 def get_usage_count(user_id: str):
-    """Retrieves the current daily usage count for a user."""
+    """当月（JST基準）の利用回数合計を返す。"""
     conn = get_db_connection()
     if not conn:
         return 0
     c = conn.cursor()
-    today = date.today()
+    today = _today_jst()
     try:
-        c.execute("SELECT total_count FROM daily_usage WHERE user_id = %s AND usage_date = %s", (user_id, today))
+        c.execute("""
+            SELECT COALESCE(SUM(total_count), 0) FROM daily_usage
+            WHERE user_id = %s
+              AND DATE_TRUNC('month', usage_date) = DATE_TRUNC('month', %s::date)
+        """, (user_id, today))
         row = c.fetchone()
         return row[0] if row else 0
     except Exception:

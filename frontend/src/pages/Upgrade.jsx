@@ -139,7 +139,7 @@ const Upgrade = () => {
                             <ul className="space-y-3 mb-6 flex-1 text-sm">
                                 <li className="flex gap-2 text-slate-700">
                                     <Zap size={14} className="text-indigo-600 shrink-0 mt-0.5" />
-                                    Unlimited AI Quizzes
+                                    500 AI Quizzes & Chats / month
                                 </li>
                                 <li className="flex gap-2 text-slate-700">
                                     <Check size={14} className="text-indigo-600 shrink-0 mt-0.5" />

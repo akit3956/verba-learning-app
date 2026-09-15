@@ -279,7 +279,7 @@ const Landing = () => {
       <div className="plan-period">Forever</div>
       <p className="plan-desc">Perfect for casual learners and beginners exploring Verba.</p>
       <ul className="plan-features">
-        <li><span className="check">✓</span> <span>4 free rounds / day (quizzes & AI tutor combined)</span></li>
+        <li><span className="check">✓</span> <span>20 free rounds / month (quizzes & AI tutor combined)</span></li>
         <li><span className="check">✓</span> <span>All JLPT levels N5–N1</span></li>
         <li><span className="check">✓</span> <span>Miss Kaplan AI Tutor access</span></li>
       </ul>
@@ -292,12 +292,11 @@ const Landing = () => {
       <div className="plan-name">Pro</div>
       <div className="plan-price"><sup>$</sup>6<span style={{fontSize: '1.5rem'}}>.99</span></div>
       <div className="plan-period">per month</div>
-      <p className="plan-desc">For serious JLPT candidates who want to study without limits.</p>
+      <p className="plan-desc">For serious JLPT candidates who want to study extensively.</p>
       <ul className="plan-features">
-        <li><span className="check">✓</span> <span>Unlimited quizzes</span></li>
-        <li><span className="check">✓</span> <span>Unlimited Miss Kaplan AI chat (24/7)</span></li>
+        <li><span className="check">✓</span> <span>500 quizzes & AI chats / month</span></li>
+        <li><span className="check">✓</span> <span>Miss Kaplan AI chat, 24/7 access</span></li>
         <li><span className="check">✓</span> <span>AI Mock Exams from real past-style tests</span></li>
-        <li><span className="check">✓</span> <span>No daily round limits</span></li>
       </ul>
       
             {agreedToTerms ? (

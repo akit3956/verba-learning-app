@@ -56,9 +56,9 @@ function NavBar({ onLogout, userPlan, usage }) {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-        {usage && userPlan === 'standard' && (
+        {usage && usage.limit != null && (
           <div style={{ fontSize: '12px', color: '#718096', fontWeight: 'bold' }}>
-            Daily Rounds: {usage.count} / {usage.limit}
+            今月あと {usage.remaining ?? Math.max(usage.limit - usage.count, 0)} 回
           </div>
         )}
         {userPlan?.toLowerCase() === 'standard' && (

@@ -16,7 +16,7 @@ import base64
 
 # Re-use from database.py
 from database import get_db_connection
-from usage_utils import get_usage_count
+from usage_utils import get_usage_count, get_monthly_limit
 
 # Settings for JWT
 SECRET_KEY = os.getenv("SECRET_KEY", "your-super-secret-key-change-in-production")
@@ -252,11 +252,15 @@ async def read_users_me(current_user: dict = Depends(get_current_user)):
 
 @router.get("/usage")
 async def get_user_usage(current_user: dict = Depends(get_current_user)):
+    plan_type = current_user.get("plan_type", "standard")
     count = get_usage_count(current_user["id"])
+    limit = get_monthly_limit(plan_type)  # 月次上限。無いプラン（founder等）はNone＝無制限
+    remaining = max(limit - count, 0) if limit is not None else None
     return {
         "count": count,
-        "limit": 4, # Standard limit
-        "plan_type": current_user.get("plan_type", "standard")
+        "limit": limit,
+        "remaining": remaining,
+        "plan_type": plan_type
     }
 
 @router.post("/forgot-password")
