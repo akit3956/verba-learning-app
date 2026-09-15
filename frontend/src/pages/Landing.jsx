@@ -5,7 +5,7 @@ const PayPalButton = ({ amount, plan, onSuccess }) => {
   const containerRef = React.useRef(null);
   
   const PLAN_ID_MAP = {
-    'pro': 'P-8SY96959DW884681XNHRQM2I',
+    'pro': 'P-57F58374RC658735RNKUN4SQ',
     'founder': 'P-8TN50650638884621NHRQPAI'
   };
 
@@ -290,7 +290,7 @@ const Landing = () => {
     <div className="price-card featured-plan">
       <div className="plan-badge">Most Popular</div>
       <div className="plan-name">Pro</div>
-      <div className="plan-price"><sup>$</sup>12<span style={{fontSize: '1.5rem'}}>.99</span></div>
+      <div className="plan-price"><sup>$</sup>6<span style={{fontSize: '1.5rem'}}>.99</span></div>
       <div className="plan-period">per month</div>
       <p className="plan-desc">For serious JLPT candidates who want to study without limits.</p>
       <ul className="plan-features">
@@ -301,7 +301,7 @@ const Landing = () => {
       </ul>
       
             {agreedToTerms ? (
-              <PayPalButton amount="12.99" plan="pro" onSuccess={handlePaymentSuccess} />
+              <PayPalButton amount="6.99" plan="pro" onSuccess={handlePaymentSuccess} />
             ) : (
               <button disabled className="btn-plan-primary w-full" style={{opacity: 0.5, cursor: 'not-allowed'}}>PayPal</button>
             )}

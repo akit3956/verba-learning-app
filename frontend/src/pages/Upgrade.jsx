@@ -130,7 +130,7 @@ const Upgrade = () => {
                             <div className="mb-6">
                                 <div className="text-indigo-600 bg-indigo-100 inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mb-4 tracking-tighter">Verba Pro</div>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-3xl font-bold text-indigo-900">$12.99</span>
+                                    <span className="text-3xl font-bold text-indigo-900">$6.99</span>
                                     <span className="text-slate-500 font-medium text-xs">/ Mo</span>
                                 </div>
                                 <p className="text-indigo-600/80 text-xs mt-1 font-medium">Monthly Subscription</p>
@@ -159,10 +159,10 @@ const Upgrade = () => {
                                 </label>
                             </div>
                             {agreedToTerms ? (
-                                <PayPalButton 
-                                    amount="12.99" 
-                                    planId="P-8SY96959DW884681XNHRQM2I" 
-                                    onApprove={(details) => handleUpgradePlan(details, 'pro')} 
+                                <PayPalButton
+                                    amount="6.99"
+                                    planId="P-57F58374RC658735RNKUN4SQ"
+                                    onApprove={(details) => handleUpgradePlan(details, 'pro')}
                                     onError={(err) => setError("PayPal transaction failed.")}
                                 />
                             ) : (
