@@ -146,15 +146,12 @@ async def register(user: UserCreate, request: Request):
             conn.close()
             raise HTTPException(status_code=400, detail="同じ端末（IP）から登録できるアカウント数の上限に達しました。")
 
-        # Founder's Cap: Max 100 users
-        plan_type = "founder" if user.is_founder else user.plan_type
-        if plan_type == "founder":
-            c.execute("SELECT COUNT(*) FROM users WHERE plan_type = 'founder'")
-            founder_count = c.fetchone()[0]
-            if founder_count >= 100:
-                c.close()
-                conn.close()
-                raise HTTPException(status_code=403, detail="Founder's Passは完売いたしました。StandardまたはProプランをご利用ください。")
+        # Founder's Passは募集終了（プラン構成はFree/Proの2つに統一）
+        if user.is_founder or user.plan_type == "founder":
+            c.close()
+            conn.close()
+            raise HTTPException(status_code=410, detail="Founder's Passの新規募集は終了しました。ProプランまたはFreeプランをご利用ください。")
+        plan_type = user.plan_type
 
         user_id = str(uuid.uuid4())
         hashed_password = get_password_hash(user.password)
@@ -402,7 +399,7 @@ class UpgradePlanRequest(BaseModel):
 async def upgrade_plan(req: UpgradePlanRequest, current_user: dict = Depends(get_current_user)):
     user_id = current_user["id"]
 
-    if req.plan_type not in ["pro", "founder"]:
+    if req.plan_type not in ["pro"]:
         raise HTTPException(status_code=400, detail="Invalid plan type requested for upgrade.")
 
     conn = get_db_connection()

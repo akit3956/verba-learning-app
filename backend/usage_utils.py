@@ -5,10 +5,11 @@ from datetime import date, datetime, timedelta, timezone
 JST = timezone(timedelta(hours=9))
 
 # A-0b: 月次利用上限（Free 20 / 有料 500）。リセットはJST基準で毎月1日。
-# founderはあえてキーを設けず上限なしのまま（Vee企画審査で維持方針を確認済み）。
+# Founder's Passは廃止（プラン構成はFree/Proの2つに統一）。
+# 未知のplan_typeを誤って無制限扱いにしないよう、フォールバックはFree(standard)の上限にする。
 PLAN_MONTHLY_LIMITS = {
     "standard": 20,  # Free
-    "pro": 500,      # 有料（$6.99/月）
+    "pro": 500,      # 有料（$6.99/月・$69.99/年）
 }
 
 
@@ -17,8 +18,8 @@ def _today_jst() -> date:
 
 
 def get_monthly_limit(plan_type: str):
-    """月次上限を返す。キーに無いプラン（founder等）はNone＝上限なし。"""
-    return PLAN_MONTHLY_LIMITS.get(plan_type)
+    """月次上限を返す。未知のplan_typeはFree(standard)の上限にフォールバックする（無制限の抜け穴を作らない）。"""
+    return PLAN_MONTHLY_LIMITS.get(plan_type, PLAN_MONTHLY_LIMITS["standard"])
 
 
 def check_and_increment_usage(user_id: str, plan_type: str):

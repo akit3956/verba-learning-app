@@ -39,9 +39,9 @@ const Terms = () => {
                             </section>
 
                             <section>
-                                <h2 className="text-xl font-bold text-[#2c2118] mb-4">Article 2 (Founder's Pass and Payments)</h2>
+                                <h2 className="text-xl font-bold text-[#2c2118] mb-4">Article 2 (Pro Subscription and Payments)</h2>
                                 <ul className="space-y-4 list-disc list-inside">
-                                    <li>Users may access Pro account features (Founder's Pass) by paying the specified fee ($109.99/year).</li>
+                                    <li>Users may access Pro account features by paying the specified fee (monthly or annual, as shown on the pricing page at time of purchase).</li>
                                     <li>Subscriptions will automatically renew. To avoid being charged for the next billing cycle, users must cancel their subscription before the next renewal date.</li>
                                     <li>Due to the nature of digital content, as a general rule, no refunds or cancellations are accepted after payment is completed.</li>
                                 </ul>
@@ -77,7 +77,7 @@ const Terms = () => {
                                 <h2 className="text-xl font-bold text-[#2c2118] mb-4">Article 6 (Disclaimer and Limitation of Liability)</h2>
                                 <ul className="space-y-4 list-disc list-inside">
                                     <li>Unless caused by the Operator's willful misconduct or gross negligence, the Operator shall not be liable for any damages incurred by the user due to system failures, data loss, or the use of the Service.</li>
-                                    <li>Even if the Operator is found liable to a user for damages for any reason, the Operator's total cumulative liability shall not exceed the total amount of fees paid by the user to the Operator for the Service in the past 12 months (e.g., the Founder's Pass purchase price).</li>
+                                    <li>Even if the Operator is found liable to a user for damages for any reason, the Operator's total cumulative liability shall not exceed the total amount of fees paid by the user to the Operator for the Service in the past 12 months (e.g., the Pro subscription fees paid).</li>
                                 </ul>
                             </section>
 

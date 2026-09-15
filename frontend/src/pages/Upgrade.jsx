@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Sparkles, Check, Star, Zap, Shield, AlertCircle, MessageCircle } from 'lucide-react';
+import { Sparkles, Check, Star, Zap, AlertCircle, MessageCircle } from 'lucide-react';
 import API_BASE_URL from "../api_config";
 
 const PayPalButton = ({ amount, planId, onApprove, onError }) => {
@@ -172,33 +172,37 @@ const Upgrade = () => {
                             )}
                         </div>
 
-                        {/* Founder's Club Section */}
+                        {/* Pro Yearly Section */}
                         <div className="bg-[#0f172a] p-6 rounded-3xl shadow-xl border border-indigo-500/30 flex flex-col hover:shadow-indigo-500/20 transition-all relative overflow-hidden">
                             <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-500/10 rounded-full blur-xl"></div>
                             <div className="mb-6 relative z-10">
-                                <div className="text-indigo-400 bg-indigo-500/10 inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mb-4 tracking-tighter">Founder's Pass</div>
+                                <div className="text-indigo-400 bg-indigo-500/10 inline-block px-3 py-1 rounded-full text-xs font-bold uppercase mb-4 tracking-tighter">Verba Pro — Yearly</div>
                                 <div className="flex items-baseline gap-1">
-                                    <span className="text-3xl font-bold text-white">$109.99</span>
+                                    <span className="text-3xl font-bold text-white">$69.99</span>
                                     <span className="text-slate-500 font-medium text-xs">/ Yr</span>
                                 </div>
-                                <p className="text-indigo-400/80 text-xs mt-1 font-medium">Yearly Membership</p>
+                                <p className="text-indigo-400/80 text-xs mt-1 font-medium">$69.99 / year — two months free</p>
                             </div>
-                            
+
                             <ul className="space-y-3 mb-6 flex-1 text-sm relative z-10">
                                 <li className="flex gap-2 text-indigo-100">
-                                    <Shield size={14} className="text-indigo-400 shrink-0 mt-0.5" />
-                                    1 Year Pro
+                                    <Zap size={14} className="text-indigo-400 shrink-0 mt-0.5" />
+                                    500 AI Quizzes & Chats / month
+                                </li>
+                                <li className="flex gap-2 text-indigo-100">
+                                    <Check size={14} className="text-indigo-400 shrink-0 mt-0.5" />
+                                    24/7 AI Tutor Chat
                                 </li>
                                 <li className="flex gap-2 text-indigo-100">
                                     <Star size={14} className="text-indigo-400 shrink-0 mt-0.5" />
-                                    VIP Discord Access
+                                    Same as Monthly, billed once a year
                                 </li>
                             </ul>
-                            
+
                             <div className="mb-4 relative z-10">
                                 <label className="flex items-center gap-2 cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
+                                    <input
+                                        type="checkbox"
                                         className="rounded border-indigo-500/50"
                                         checked={agreedToTerms}
                                         onChange={() => setAgreedToTerms(!agreedToTerms)}
@@ -206,18 +210,10 @@ const Upgrade = () => {
                                     <span className="text-[10px] text-indigo-300/60">Agree to Terms</span>
                                 </label>
                             </div>
-                            {agreedToTerms ? (
-                                <PayPalButton 
-                                    amount="109.99" 
-                                    planId="P-8TN50650638884621NHRQPAI" 
-                                    onApprove={(details) => handleUpgradePlan(details, 'founder')} 
-                                    onError={(err) => setError("PayPal transaction failed.")}
-                                />
-                            ) : (
-                                <button className="w-full py-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400/50 font-bold text-sm cursor-not-allowed">
-                                    PayPal
-                                </button>
-                            )}
+                            {/* TODO(aki): 年払いplanId発行後に差し替えてボタンを有効化すること */}
+                            <button className="w-full py-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl text-indigo-400/50 font-bold text-sm cursor-not-allowed">
+                                Coming soon
+                            </button>
                         </div>
 
                     </div>

@@ -6,7 +6,6 @@ const PayPalButton = ({ amount, plan, onSuccess }) => {
   
   const PLAN_ID_MAP = {
     'pro': 'P-57F58374RC658735RNKUN4SQ',
-    'founder': 'P-8TN50650638884621NHRQPAI'
   };
 
   React.useEffect(() => {
@@ -307,30 +306,20 @@ const Landing = () => {
 
     </div>
 
-    {/* Founder's Pass */}
+    {/* Pro Yearly */}
     <div className="price-card">
-      <div className="plan-name">Founder's Pass</div>
-      <div className="plan-price"><sup>$</sup>109<span style={{fontSize: '1.5rem'}}>.99</span></div>
-      <div className="plan-period">billed annually · <strong style={{color: 'var(--cyan)'}}>$9.17 / mo</strong></div>
-      <p className="plan-desc">Lock in the best rate and support Verba from the ground up.</p>
-      <div className="founders-extras">
-        <div className="extras-item">🚀 Early access to new features</div>
-        <div className="extras-item">🛡️ Founder's Club Discord VIP access</div>
-        <div className="extras-item">⭐ Priority feature requests</div>
-      </div>
+      <div className="plan-name">Pro — Yearly</div>
+      <div className="plan-price"><sup>$</sup>69<span style={{fontSize: '1.5rem'}}>.99</span></div>
+      <div className="plan-period">$69.99 / year — two months free</div>
+      <p className="plan-desc">Same Pro features, billed once a year instead of monthly.</p>
       <ul className="plan-features">
-        <li><span className="check">✓</span> <span>All Pro features included</span></li>
-        <li><span className="check">✓</span> <span>1 full year of access</span></li>
-        <li><span className="check">✓</span> <span>Save 29% vs monthly Pro</span></li>
+        <li><span className="check">✓</span> <span>500 quizzes & AI chats / month</span></li>
+        <li><span className="check">✓</span> <span>Miss Kaplan AI chat, 24/7 access</span></li>
+        <li><span className="check">✓</span> <span>Two months free vs. paying monthly</span></li>
       </ul>
-      
-            {agreedToTerms ? (
-              <PayPalButton amount="109.99" plan="founder" onSuccess={handlePaymentSuccess} />
-            ) : (
-              <button disabled className="btn-plan-primary w-full" style={{background: 'var(--gold)', color: 'var(--navy)', opacity: 0.5, cursor: 'not-allowed'}}>PayPal</button>
-            )}
 
-      <p className="monthly-eq">= $9.17/month — 29% off vs Pro</p>
+      {/* TODO(aki): 年払いplanId発行後に差し替えてボタンを有効化すること */}
+      <button disabled className="btn-plan-primary w-full" style={{opacity: 0.5, cursor: 'not-allowed'}}>Coming soon</button>
     </div>
 
   </div>
@@ -348,7 +337,7 @@ const Landing = () => {
     </div>
     <div className="faq-item">
       <div className="faq-q">Which JLPT levels does Verba cover? <span className="toggle">+</span></div>
-      <div className="faq-a">Verba covers all 5 JLPT levels: N5 (beginner) through N1 (advanced), on every plan. Free users get 4 rounds per day across quizzes and the AI tutor; Pro and Founder's Pass members study without limits and unlock AI Mock Exams.</div>
+      <div className="faq-a">Verba covers all 5 JLPT levels: N5 (beginner) through N1 (advanced), on every plan. Free users get 20 rounds per month across quizzes and the AI tutor; Pro members get 500 rounds per month and unlock AI Mock Exams.</div>
     </div>
     <div className="faq-item">
       <div className="faq-q">Can I cancel my Pro subscription anytime? <span className="toggle">+</span></div>
