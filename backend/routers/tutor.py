@@ -10,9 +10,12 @@ from usage_utils import check_and_increment_usage
 
 router = APIRouter(prefix="/api/tutor", tags=["tutor"])
 
+# A-0 Step4: main.py と同じ環境変数名で揃える（.envの1箇所で両方に反映される）
+MODEL_CHAT = os.getenv("MODEL_CHAT", "gpt-5-mini")
+
 class ChatRequest(BaseModel):
     message: str
-    model: str = "gpt-4o"
+    model: str = MODEL_CHAT
 
 @router.post("/chat")
 async def tutor_chat(req: ChatRequest, current_user: dict = Depends(get_current_user)):
@@ -59,15 +62,14 @@ async def tutor_chat(req: ChatRequest, current_user: dict = Depends(get_current_
         except Exception as e:
             error_str = str(e)
             if ("429" in error_str or "quota" in error_str.lower()) and openai_key:
-                print(f"Gemini Quota Exceeded in Tutor. Falling back to GPT-4o...")
+                print(f"Gemini Quota Exceeded in Tutor. Falling back to {MODEL_CHAT}...")
                 client_oa = AsyncOpenAI(api_key=openai_key)
                 response = await client_oa.chat.completions.create(
-                    model="gpt-4o",
+                    model=MODEL_CHAT,
                     messages=[
-                        {"role": "system", "content": system_prompt + "\n(Note: Gemini quota exceeded, falling back to GPT-4o)"},
+                        {"role": "system", "content": system_prompt + f"\n(Note: Gemini quota exceeded, falling back to {MODEL_CHAT})"},
                         {"role": "user", "content": req.message}
-                    ],
-                    temperature=0.4
+                    ]
                 )
                 return {"reply": response.choices[0].message.content}
             else:
@@ -81,12 +83,11 @@ async def tutor_chat(req: ChatRequest, current_user: dict = Depends(get_current_
         try:
             client_oa = AsyncOpenAI(api_key=openai_key)
             response = await client_oa.chat.completions.create(
-                model="gpt-4o",
+                model=MODEL_CHAT,
                 messages=[
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": req.message}
-                ],
-                temperature=0.4
+                ]
             )
             return {"reply": response.choices[0].message.content}
         except Exception as e:

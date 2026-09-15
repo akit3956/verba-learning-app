@@ -39,6 +39,11 @@ class ConfigUpdate(BaseModel):
 
 load_dotenv(override=True)
 
+# A-0 Step4: モデル名をハードコードせず環境変数に外出し。
+# target_model / vision_model の強制上書きを外しても、ここがデフォルトになる。
+MODEL_CHAT = os.getenv("MODEL_CHAT", "gpt-5-mini")
+MODEL_VISION = os.getenv("MODEL_VISION", "gpt-5-mini")
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Initialize DB
@@ -72,12 +77,12 @@ class GenerateRequest(BaseModel):
     level: str     # "N5", "N4", "N3", "N2", "N1"
     topic: str = ""
     mode: str = "single" # "single", "small_test", "mock_test"
-    model: str = "gpt-4o"
-    include_image: bool = False 
+    model: str = MODEL_CHAT
+    include_image: bool = False
 
 class MockTestRequest(BaseModel):
     level: str
-    model: str = "gpt-4o"
+    model: str = MODEL_VISION
     api_key: str = ""
 
 class InquiryRequest(BaseModel):
@@ -167,7 +172,7 @@ async def test_api_config(current_user: dict = Depends(get_current_user)):
 @app.get("/models")
 async def get_models():
     models = [
-        {"name": "gpt-4o", "type": "cloud", "size": "OpenAI (High Accuracy)"},
+        {"name": MODEL_CHAT, "type": "cloud", "size": "OpenAI (High Accuracy)"},
         {"name": "gemini-2.0-flash", "type": "cloud", "size": "Google (Fast & Accurate)"}
     ]
     return {"models": models}
@@ -245,7 +250,7 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                 prompt = get_aki_style_prompt(req.level, req.topic, req.category, loop_index=i, total_count=count, reference_text=reference_text)
                 
                 # Model check (Constraint to 2 models)
-                target_model = "gpt-4o" # Strict fallback / Forced to bypass Gemini limits
+                target_model = MODEL_CHAT # Strict fallback / Forced to bypass Gemini limits
 
                 is_openai = target_model.startswith("gpt-")
                 is_gemini = target_model.startswith("gemini")
@@ -256,7 +261,7 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                     if not client:
                         print("Error: OpenAI client could not be initialized")
                         raise HTTPException(status_code=503, detail="OpenAI API key not configured")
-                    
+
                     print(f"Sending request to OpenAI ({req.model})...")
                     try:
                         response = await client.chat.completions.create(
@@ -265,7 +270,6 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                                 {"role": "system", "content": "You are a specific Japanese language quiz generator. Output must be valid JSON."},
                                 {"role": "user", "content": prompt}
                             ],
-                            temperature=0.2,
                             response_format={"type": "json_object"}
                         )
                         content = response.choices[0].message.content
@@ -299,19 +303,18 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                     except Exception as e:
                         error_str = str(e)
                         if "429" in error_str or "quota" in error_str.lower():
-                            print(f"Gemini Quota Exceeded (429). Falling back to GPT-4o...")
+                            print(f"Gemini Quota Exceeded (429). Falling back to {MODEL_CHAT}...")
                             # Fallback to OpenAI
                             client_oa = get_openai_client()
                             if not client_oa:
                                 raise HTTPException(status_code=503, detail="Gemini Quota Exceeded and OpenAI not configured.")
-                            
+
                             response = await client_oa.chat.completions.create(
-                                model="gpt-4o",
+                                model=MODEL_CHAT,
                                 messages=[
                                     {"role": "system", "content": "You are a Japanese language quiz generator. Output must be valid JSON. (Gemini Fallback)"},
                                     {"role": "user", "content": prompt}
                                 ],
-                                temperature=0.2,
                                 response_format={"type": "json_object"}
                             )
                             content = response.choices[0].message.content
@@ -360,14 +363,14 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
         prompt = get_quiz_prompt(req.category, req.level, count, reference_text, None, req.include_image)
         
         # Model check (Reading)
-        target_model = "gpt-4o" # Strict fallback / Forced to bypass Gemini limits
+        target_model = MODEL_CHAT # Strict fallback / Forced to bypass Gemini limits
 
         is_openai = target_model.startswith("gpt-")
         if is_openai:
             client = get_openai_client()
             if not client:
                  raise HTTPException(status_code=503, detail="OpenAI API key not configured")
-            
+
             print(f"Sending request to OpenAI ({req.model}) for Reading...")
             try:
                 response = await client.chat.completions.create(
@@ -376,7 +379,6 @@ async def generate_quiz(req: GenerateRequest, current_user: dict = Depends(get_c
                         {"role": "system", "content": "You are a Japanese teacher. Output must be valid JSON."},
                         {"role": "user", "content": prompt}
                     ],
-                    temperature=0.2,
                     response_format={"type": "json_object"}
                 )
                 raw_content = response.choices[0].message.content
@@ -471,7 +473,7 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
     """
     
     # Model validation
-    target_model = "gpt-4o" # Strict fallback / Forced to bypass Gemini limits
+    target_model = MODEL_VISION # Strict fallback / Forced to bypass Gemini limits
 
     try:
         if target_model.startswith("gemini"):
@@ -502,8 +504,8 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
             if not client:
                 raise HTTPException(status_code=401, detail="OpenAI API Key not configured")
             
-            vision_model = "gpt-4o"
-            
+            vision_model = MODEL_VISION
+
             response = await client.chat.completions.create(
                 model=vision_model,
                 messages=[
@@ -520,7 +522,7 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
                         ],
                     }
                 ],
-                max_tokens=1500,
+                max_completion_tokens=1500,
             )
             content = response.choices[0].message.content
             
