@@ -202,5 +202,11 @@ def get_quiz_prompt(category, level, count=1, reference_text="", few_shot_exampl
     base_instruction = f"""
 あなたは厳格なプロの日本人日本語教師です。{STRICT_NATIVE_TEACHER_RULES}
 JLPT {level} レベルの {category} 問題を作成してください。
+
+【誤答（不正解の選択肢）の設計ルール（必須）】
+誤答は本文・場面に一切登場しない無関係な単語をランダムに並べてはいけません。
+必ず本文中に実際に登場する人物・行為・情報の断片を使い、読み間違いや早合点をすると選んでしまうような
+「紛らわしい誤答」にしてください。本文に一度も出てこない概念（例：本文で触れられていない職業・乗り物・行事など）を
+誤答に使うことは禁止です。誤答も本文の内容だけで作れるかを自己検証してから出力してください。
 """
     return base_instruction + f"\n参考資料: {reference_text[:800]}"

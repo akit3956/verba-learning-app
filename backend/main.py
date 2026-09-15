@@ -450,15 +450,20 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
     # We'll use the dynamic get_openai_client for OpenAI, but need gemini_key below just in case.
     
     prompt = f"""
-    You are a Japanese exam digitizer. 
+    You are a Japanese exam digitizer.
     Analyze this image from a JLPT {req.level} exam.
-    
+
     Task:
     1. Identify any "Quiz Questions" or "Reading Tasks" on this page.
     2. Extract them into a structured JSON format.
     3. If there is a reading passage, include it in the "question" field.
     4. Provide the correct answer and a brief explanation for each.
-    
+    5. IMPORTANT: Preserve the original text exactly as printed, including every full-width
+       space (　) used for word segmentation (分かち書き). Do NOT remove, collapse, or add
+       spaces. This is especially critical for N5/N4 level text, where word-segmented spacing
+       is essential for beginner readability. Copy the spacing character-for-character from
+       the image.
+
     Return ONLY valid JSON (no markdown frame):
     [
       {{
@@ -505,6 +510,8 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
                 raise HTTPException(status_code=401, detail="OpenAI API Key not configured")
             
             vision_model = MODEL_VISION
+            # reasoning_effort はgpt-5系専用パラメータ。MODEL_VISIONを非reasoningモデルに
+            # 変更する場合はここも見直すこと（reasoning_tokensが出力予算を食い潰す事故対策）
 
             response = await client.chat.completions.create(
                 model=vision_model,
@@ -522,7 +529,8 @@ async def generate_mock_test(req: MockTestRequest, current_user: dict = Depends(
                         ],
                     }
                 ],
-                max_completion_tokens=1500,
+                max_completion_tokens=4000,
+                reasoning_effort="low",
             )
             content = response.choices[0].message.content
             
