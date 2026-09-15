@@ -310,12 +310,12 @@ const Landing = () => {
     <div className="price-card">
       <div className="plan-name">Pro — Yearly</div>
       <div className="plan-price"><sup>$</sup>69<span style={{fontSize: '1.5rem'}}>.99</span></div>
-      <div className="plan-period">$69.99 / year — two months free</div>
+      <div className="plan-period">Pay for 10 months, get 12</div>
       <p className="plan-desc">Same Pro features, billed once a year instead of monthly.</p>
       <ul className="plan-features">
         <li><span className="check">✓</span> <span>500 quizzes & AI chats / month</span></li>
         <li><span className="check">✓</span> <span>Miss Kaplan AI chat, 24/7 access</span></li>
-        <li><span className="check">✓</span> <span>Two months free vs. paying monthly</span></li>
+        <li><span className="check">✓</span> <span>$69.99/year vs. $83.88 if paid monthly</span></li>
       </ul>
 
       {/* TODO(aki): 年払いplanId発行後に差し替えてボタンを有効化すること */}

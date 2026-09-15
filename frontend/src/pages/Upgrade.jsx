@@ -181,7 +181,7 @@ const Upgrade = () => {
                                     <span className="text-3xl font-bold text-white">$69.99</span>
                                     <span className="text-slate-500 font-medium text-xs">/ Yr</span>
                                 </div>
-                                <p className="text-indigo-400/80 text-xs mt-1 font-medium">$69.99 / year — two months free</p>
+                                <p className="text-indigo-400/80 text-xs mt-1 font-medium">Pay for 10 months, get 12 — 2 months free built into the price</p>
                             </div>
 
                             <ul className="space-y-3 mb-6 flex-1 text-sm relative z-10">
@@ -195,7 +195,7 @@ const Upgrade = () => {
                                 </li>
                                 <li className="flex gap-2 text-indigo-100">
                                     <Star size={14} className="text-indigo-400 shrink-0 mt-0.5" />
-                                    Same as Monthly, billed once a year
+                                    $69.99 billed once a year (vs. $83.88 if paid monthly)
                                 </li>
                             </ul>
 
